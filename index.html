@@ -205,7 +205,7 @@ td.txt { font-family: var(--font-body); }
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 6px; font-size: 13px; z-index: 50; max-width: calc(100% - 32px);
 }
 .toast[hidden] { display: none; }
-.closeNow{margin-left:auto;background:#b3261e;color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}.closeNow:disabled{opacity:.5;cursor:default}
+.posActions{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.recalc{background:transparent;color:inherit;border:1px solid currentColor;border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;opacity:.85}.closeNow{background:#b3261e;color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}.closeNow:disabled{opacity:.5;cursor:default}
 .riskScale{display:flex;justify-content:space-between;font-size:11px;opacity:.7;margin-top:2px}
 </style>
 
@@ -232,9 +232,7 @@ td.txt { font-family: var(--font-body); }
       <section class="grp">
         <h2>Mode</h2>
         <div class="seg" id="segMode" role="group" aria-label="Mode">
-          <button type="button" data-v="sim">Simulation</button>
           <button type="button" data-v="paper">Papier</button>
-          <button type="button" data-v="testnet">Testnet</button>
           <button type="button" data-v="live">Réel</button>
         </div>
         <p class="hint" id="modeHint"></p>
@@ -282,16 +280,10 @@ td.txt { font-family: var(--font-body); }
       </section>
 
       <section class="grp">
-        <h2>Style de trading</h2>
-        <div class="seg" id="segProfile" role="group" aria-label="Profil">
-          <button type="button" data-v="prudent">Prudent</button>
-          <button type="button" data-v="equilibre">Équilibré</button>
-          <button type="button" data-v="agressif">Agressif</button>
-        </div>
-        <div class="slider" style="margin-top:12px"><label class="lbl" for="riskLevel">Risque</label><input id="riskLevel" type="range" min="0" max="200" step="5"><b id="riskVal">100 %</b></div>
+        <h2>Risque</h2>
+        <div class="slider"><label class="lbl" for="riskLevel">Niveau</label><input id="riskLevel" type="range" min="0" max="200" step="5"><b id="riskVal">100 %</b></div>
         <div class="riskScale"><span>0 : positions minuscules</span><span>100 : équilibré</span><span>200 : tout ou rien</span></div>
         <p class="hint" id="riskHint"></p>
-        <p class="hint" id="profHint"></p>
         <details class="adv">
           <summary>Réglages avancés</summary>
           <div class="advgrid">
@@ -304,7 +296,7 @@ td.txt { font-family: var(--font-body); }
               <div class="field"><label for="slAtr">Stop (× ATR)</label><input id="slAtr" type="number" step="0.1"></div>
             </div>
             <div class="row2">
-              <div class="field"><label for="rr">Objectif (× risque)</label><input id="rr" type="number" step="0.1"></div>
+              <div class="field"><label for="gainTarget">Gain visé (% de la marge)</label><input id="gainTarget" type="number" step="0.5" min="0.5"></div>
               <div class="field"><label for="trailAtr">Trailing (× ATR)</label><input id="trailAtr" type="number" step="0.1"></div>
             </div>
             <div class="row2">
@@ -313,14 +305,16 @@ td.txt { font-family: var(--font-body); }
             </div>
             <div class="row2">
               <div class="field"><label for="cooldown">Repos après sortie (bougies)</label><input id="cooldown" type="number" step="1" min="0"></div>
-              <div class="field"><label for="stepK">Montée du stop (part du gain, 0 = off)</label><input id="stepK" type="number" step="0.05" min="0" max="0.95"></div>
+              <div class="field"><label for="feeUsd">Frais aller-retour (USDT)</label><input id="feeUsd" type="number" step="0.05" min="0"></div>
             </div>
             <div class="row2">
               <div class="field"><label for="maxDD">Arrêt d'urgence (%)</label><input id="maxDD" type="number" step="1"></div>
-              <div class="field"><label for="lockMult">Verrouillage à (× frais)</label><input id="lockMult" type="number" step="0.1"></div>
+              <div></div>
             </div>
-            <label class="check"><input type="checkbox" id="lockFees"><span>Dès que le gain couvre les frais, le stop passe au point mort : un trade en gain ne finit plus en perte</span></label>
-            <p class="hint">« Verrouillage à » : gain minimum, en multiple des frais, avant de passer au point mort. À 3×, le stop se pose dès que le gain vaut 3 fois les frais. Sous 2×, les petits retours du prix te sortent trop souvent : en simulation, 1,5× fait perdre de l'argent.</p>
+            <p class="hint" id="gainHint"></p>
+            <label class="check"><input type="checkbox" id="dailyLossOn"><span>Activer la limite de perte journalière (le bot arrête de prendre de nouveaux trades quand elle est atteinte)</span></label>
+            <label class="check"><input type="checkbox" id="runOn"><span>Laisser courir au-delà du gain visé si la tendance continue (le stop se place alors à 80 % du gain visé)</span></label>
+            <label class="check"><input type="checkbox" id="reverse"><span>Inverser la position si le signal se retourne contre un trade perdant et que le gain visé couvre les doubles frais</span></label>
             <label class="check"><input type="checkbox" id="entryFilter"><span>Filtre d'entrée : refuser une entrée contre la dernière bougie, contre une mèche de rejet ou sans direction (ADX faible)</span></label>
             <label class="check"><input type="checkbox" id="structStop"><span>Stop au-delà du dernier creux ou sommet (hors du bruit du marché)</span></label>
             <label class="check"><input type="checkbox" id="trailing"><span>Stop suiveur (trailing) après +1R</span></label>
@@ -370,7 +364,8 @@ td.txt { font-family: var(--font-body); }
           <div class="factors" id="factors" style="margin-top:14px"></div>
         </div>
         <div class="card">
-          <div class="card-h"><h2>Position</h2><span class="note" id="posNote"></span><button type="button" id="closeNow" class="closeNow" hidden>Fermer maintenant</button></div>
+          <div class="card-h"><h2>Position</h2><span class="note" id="posNote"></span></div>
+          <div class="posActions" id="posActions" hidden><button type="button" id="recalc" class="recalc" title="Recalcule le stop et l'objectif : en gain il sécurise, en perte il limite les dégâts">⟳ Recalculer TP/SL</button><button type="button" id="closeNow" class="closeNow">Fermer maintenant</button></div>
           <div id="posBox"></div>
           <canvas id="curve" aria-label="Courbe du capital"></canvas>
           <p class="note">Courbe du capital (ligne pointillée : budget de départ)</p>
@@ -411,22 +406,21 @@ const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 const sgn = (x) => (x > 0 ? 1 : x < 0 ? -1 : 0);
 
 const PROFILES = {
-  // alloc = part du budget engagée comme marge (jusqu'à 100 % = tout le budget)
-  // riskPct = perte maximale acceptée si le stop est touché, en % du capital (plafonne la taille)
-  prudent:   { thr: 55, alloc: 30,  riskPct: 3,  slAtr: 2.0, rr: 2.0, trailAtr: 2.0, maxBars: 60 },
-  equilibre: { thr: 42, alloc: 60,  riskPct: 8,  slAtr: 1.6, rr: 1.8, trailAtr: 1.6, maxBars: 45 },
-  agressif:  { thr: 32, alloc: 100, riskPct: 25, slAtr: 1.3, rr: 1.5, trailAtr: 1.3, maxBars: 30 },
+  prudent: { thr: 44, alloc: 30, riskPct: 3, slAtr: 1.8, trailAtr: 1.9, maxBars: 55 },
+  equilibre: { thr: 38, alloc: 60, riskPct: 8, slAtr: 1.6, trailAtr: 1.7, maxBars: 48 },
+  agressif: { thr: 34, alloc: 100, riskPct: 25, slAtr: 1.5, trailAtr: 1.5, maxBars: 42 },
 };
 
-/* Jauge de risque 0 à 200 % : elle règle surtout la TAILLE des positions (part du budget engagée et perte maximale par trade).
-   La qualité des signaux reste raisonnable à tous les niveaux : seuil d'entrée jamais sous 38, stop jamais trop serré,
-   objectif d'au moins 1,8 fois le risque. Repères : 50 = Prudent, 100 = Équilibré, 150 = Agressif. */
+/* Jauge de risque 0 à 200 % : règle la TAILLE des positions (part du budget engagée, perte maximale par trade) et la
+   sélectivité des entrées. Plus le risque monte, plus le bot accepte de signaux (seuil plus bas, moins de confirmations,
+   repos plus court) pour faire plus de trades, mais le seuil ne descend jamais sous 30 et les filtres de qualité restent actifs.
+   Repères : 50 = prudent, 100 = équilibré, 150 = agressif. */
 const RISK_ANCHORS = [
-  [0,   { thr: 55, alloc: 5,   riskPct: 0.5, slAtr: 2.0, rr: 2.0, trailAtr: 2.0, maxBars: 60 }],
-  [50,  { thr: 48, alloc: 30,  riskPct: 3,   slAtr: 2.0, rr: 2.0, trailAtr: 2.0, maxBars: 55 }],
-  [100, { thr: 42, alloc: 60,  riskPct: 8,   slAtr: 1.7, rr: 1.9, trailAtr: 1.8, maxBars: 45 }],
-  [150, { thr: 40, alloc: 100, riskPct: 25,  slAtr: 1.6, rr: 1.8, trailAtr: 1.7, maxBars: 40 }],
-  [200, { thr: 38, alloc: 100, riskPct: 50,  slAtr: 1.6, rr: 1.8, trailAtr: 1.6, maxBars: 40 }],
+  [0,   { thr: 52, alloc: 5,   riskPct: 0.5, slAtr: 2.0, trailAtr: 2.0, maxBars: 60 }],
+  [50,  { thr: 44, alloc: 30,  riskPct: 3,   slAtr: 1.8, trailAtr: 1.9, maxBars: 55 }],
+  [100, { thr: 38, alloc: 60,  riskPct: 8,   slAtr: 1.6, trailAtr: 1.7, maxBars: 48 }],
+  [150, { thr: 34, alloc: 100, riskPct: 25,  slAtr: 1.5, trailAtr: 1.5, maxBars: 42 }],
+  [200, { thr: 30, alloc: 100, riskPct: 50,  slAtr: 1.4, trailAtr: 1.4, maxBars: 40 }],
 ];
 function riskParams(level) {
   const r = Math.max(0, Math.min(200, +level || 0));
@@ -434,17 +428,29 @@ function riskParams(level) {
   const [r0, a] = RISK_ANCHORS[i], [r1, b] = RISK_ANCHORS[i + 1], k = (r - r0) / (r1 - r0), out = {};
   for (const key of Object.keys(a)) out[key] = a[key] + (b[key] - a[key]) * k;
   out.thr = Math.round(out.thr); out.alloc = Math.round(out.alloc); out.riskPct = +out.riskPct.toFixed(1);
-  out.slAtr = +out.slAtr.toFixed(2); out.rr = +out.rr.toFixed(2); out.trailAtr = +out.trailAtr.toFixed(2); out.maxBars = Math.round(out.maxBars);
+  out.slAtr = +out.slAtr.toFixed(2); out.trailAtr = +out.trailAtr.toFixed(2); out.maxBars = Math.round(out.maxBars);
+  // sélectivité : moins de conditions d'entrée quand le risque monte
+  out.htfGate = r < 80;
+  out.confirmCandle = r < 120;
+  out.cooldown = r < 60 ? 3 : r < 120 ? 2 : r < 170 ? 1 : 0;
   return out;
 }
 
 const DEFAULTS = {
-  mode: 'sim', market: 'futures', leverage: 5, symbol: 'BTCUSDT', budget: 1000, tf: '5m',
-  profile: 'equilibre', ...PROFILES.equilibre,
-  trailing: true, maxDailyLoss: 4, maxDD: 20, allowShort: true, htfGate: true,
-  costFilter: true, confirmCandle: true, lockFees: true, lockMult: 3, entryFilter: true, structStop: true, cooldown: 2, stepK: 0.5, speed: 20, slip: 0.0002,
+  mode: 'paper', market: 'futures', leverage: 5, symbol: 'BTCUSDT', budget: 1000, tf: '5m',
+  riskLevel: 100, ...riskParams(100),
+  gainTarget: 5,        // gain visé, en % de la marge engagée (ROI)
+  feeUsd: 0.3,          // frais aller-retour estimés, en USDT, pour calculer le point mort
+  runOn: true,          // laisser courir au-delà du gain visé si le marché continue
+  reverse: true,        // inverser la position si le signal se retourne et que ça vaut les doubles frais
+  dailyLossOn: true, maxDailyLoss: 4, maxDD: 20, trailing: true, allowShort: true,
+  costFilter: true, entryFilter: true, structStop: true, speed: 20, slip: 0.0002,
   apiKey: '', apiSecret: '',
 };
+
+/* Verrouillage des frais : le stop passe au point mort quand le gain atteint 3 x les frais A/R (et au moins 0,5 ATR).
+   Mesuré en simulation : verrouiller plus tôt fait sortir sur le bruit et coûte cher. */
+const LK = { fm: 3, fa: 0.5, steps: [] };
 
 function feeRate(market) { return market === 'futures' ? 0.0005 : 0.001; }
 
@@ -603,6 +609,7 @@ function analyze(cs) {
     body: atr > 0 ? (last.c - last.o) / atr : 0,                         // corps de la dernière bougie, en ATR (signé)
     upWick: last.h - Math.max(last.o, last.c), dnWick: Math.min(last.o, last.c) - last.l,
     swingLow: Math.min(...w.slice(-8).map((x) => x.l)), swingHigh: Math.max(...w.slice(-8).map((x) => x.h)),
+    low3: Math.min(...w.slice(-3).map((x) => x.l)), high3: Math.max(...w.slice(-3).map((x) => x.h)),
   };
 }
 
@@ -778,8 +785,11 @@ class Bot {
       this.pushStop();
       let reason = null, ref = p;
       if (q.liq && ((q.dir > 0 && p <= q.liq) || (q.dir < 0 && p >= q.liq))) { reason = 'liquidation'; ref = q.liq; }
-      else if ((q.dir > 0 && p <= q.sl) || (q.dir < 0 && p >= q.sl)) { reason = q.kind === 'trail' ? 'trailing stop' : q.kind === 'lock' ? 'gain sécurisé' : (q.kind === 'be' || q.kind === 'fees') ? 'point mort (frais couverts)' : 'stop-loss'; }
-      else if ((q.dir > 0 && p >= q.tp) || (q.dir < 0 && p <= q.tp)) { reason = 'take-profit'; ref = q.tp; }
+      else if ((q.dir > 0 && p <= q.sl) || (q.dir < 0 && p >= q.sl)) { reason = q.kind === 'trail' ? 'trailing stop' : q.kind === 'lock' ? 'gain sécurisé' : q.kind === 'struct' ? 'stop sous la structure' : q.kind === 'manual' ? 'stop recalculé' : q.kind === 'fees' ? 'point mort (frais couverts)' : 'stop-loss'; }
+      else if ((q.dir > 0 && p >= q.tp) || (q.dir < 0 && p <= q.tp)) {
+        if (this.cfg.runOn && !q.ext && this.canRun()) this.extendRun(p);
+        else { reason = q.ext ? 'objectif prolongé atteint' : 'gain visé atteint'; ref = q.tp; }
+      }
       if (reason) { await this.closePosition(ref, reason, t); return; }
     }
 
@@ -788,7 +798,7 @@ class Bot {
       if (this.status !== 'paused_day') {
         // Perte du jour = trades déjà clôturés aujourd'hui. Un trade en cours garde son stop et n'est pas fermé pour cette raison.
         const dayLoss = (-(this.dayPnl || 0) / this.dayStartEquity) * 100;
-        if (dayLoss >= this.cfg.maxDailyLoss) {
+        if (this.cfg.dailyLossOn !== false && dayLoss >= this.cfg.maxDailyLoss) {
           this.status = 'paused_day';
           this.log('warn', `Limite de perte journalière atteinte (${dayLoss.toFixed(1)} % de pertes réalisées). Plus de nouveaux trades aujourd'hui${this.pos ? ' ; le trade en cours continue avec son stop' : ''}.`);
         }
@@ -825,45 +835,179 @@ class Bot {
     else await this.consider(a, last);
   }
 
+  /* Revue de la position à chaque bougie fermée : remonte le stop sur la structure du marché, et réévalue le trade.
+     Si le signal s'est retourné contre une position perdante, le bot alerte et sort au lieu d'attendre le stop ;
+     s'il peut, il inverse la position (en comptant les doubles frais). */
   async manage(a, c) {
     const q = this.pos, cfg = this.cfg;
     const price = this.lastPrice ?? c.c;
     q.bars++;
+    this.structTrail(a);
+    this.ratchet(); this.pushStop();
+    const unreal = q.dir * (price - q.entry) * q.qty;
+    const opp = q.dir > 0 ? -a.score : a.score;       // force du signal contraire (0 si le signal est dans le sens du trade)
+    const withTrade = q.dir > 0 ? a.score : -a.score;
+    const lbl = q.dir > 0 ? 'LONG' : 'SHORT';
+    const pnlTxt = `${unreal >= 0 ? '+' : ''}${unreal.toFixed(2)} USDT`;
     if (q.bars >= cfg.maxBars) { await this.closePosition(price, 'durée maximale', this.lastT); return; }
-    const opp = q.dir > 0 ? -a.score : a.score;
-    if (opp >= cfg.thr * 0.7 && q.bars >= 2) { await this.closePosition(price, 'inversion du signal', this.lastT); return; }
-    this.decision = { kind: 'hold', text: `Position ${q.dir > 0 ? 'LONG' : 'SHORT'} ouverte depuis ${q.bars} bougie(s). Le bot gère la sortie.` };
+
+    // 1) signal contraire franc
+    if (opp >= cfg.thr && q.bars >= 1) {
+      if (unreal >= this.feeFor(q.qty, q.entry)) {
+        // en gain : on ne sort pas, on resserre le stop pour garder le gain
+        q.tight = true;
+        this.log('warn', `Le signal se retourne (score ${a.score}) mais la position est en gain (${pnlTxt}) : le stop est resserré pour garder le gain.`);
+      } else {
+        const can = cfg.reverse && this.fut && (-q.dir > 0 || cfg.allowShort) && this.status !== 'paused_day';
+        this.log('warn', `Le signal s'est retourné contre ce trade (score ${a.score}, position ${pnlTxt}) : continuer n'a plus de sens, sortie${can ? ' et étude d\'une inversion' : ''}.`);
+        await this.closePosition(price, 'signal inversé', this.lastT);
+        if (can && !this.pos) {
+          this.cooldown = 0; this.reversing = true;
+          try { await this.consider(a, c); } finally { this.reversing = false; }
+          if (!this.pos) this.log('info', 'Inversion non prise : conditions non remplies (le gain visé ne couvrirait pas les doubles frais, ou un filtre refuse l\'entrée). Sortie simple.');
+        }
+        return;
+      }
+    }
+    // 2) signal contraire modéré sur une position perdante : sortie anticipée, perte limitée
+    else if (opp >= cfg.thr * 0.5 && unreal < 0 && q.bars >= 2) {
+      const stopLoss = Math.max(0, q.dir * (q.entry - q.sl)) * q.qty;
+      this.log('warn', `Le marché se retourne contre ce trade (score ${a.score}) : sortir maintenant limite la perte à ${pnlTxt} au lieu de ${(-stopLoss).toFixed(2)} USDT si le stop est touché.`);
+      await this.closePosition(price, 'signal contraire (perte limitée)', this.lastT);
+      return;
+    }
+    // 3) trade sans élan
+    if (q.bars >= Math.max(6, Math.round(cfg.maxBars * 0.6)) && unreal <= 0 && a.adx < 18) {
+      this.log('warn', `Le trade n'avance pas depuis ${q.bars} bougies (ADX ${a.adx.toFixed(0)}) : sortie.`);
+      await this.closePosition(price, 'trade sans élan', this.lastT);
+      return;
+    }
+    const prog = q.T > 0 ? Math.max(0, (q.dir * (q.extreme - q.entry)) / q.T) : 0;
+    let txt = `Revue ${lbl} (${q.bars} bougie${q.bars > 1 ? 's' : ''}) : ${pnlTxt}, score ${a.score > 0 ? '+' : ''}${a.score}`;
+    if (withTrade >= cfg.thr * 0.5) txt += ' (toujours dans le sens du trade)';
+    else if (opp > 0) txt += ` (le marché hésite, signal contraire ${Math.round(opp)}/${cfg.thr})`;
+    else txt += ' (neutre)';
+    txt += `. Gain visé atteint à ${Math.round(prog * 100)} %.`;
+    this.decision = { kind: opp >= cfg.thr * 0.3 && unreal < 0 ? 'watch' : 'hold', text: txt };
   }
 
-  /* Cliquet : le stop ne fait que se rapprocher du prix, à chaque prix reçu, en s'appuyant sur le meilleur niveau atteint.
-       +0,5R : point mort · +1R : on garde 35 % du gain max · +1,4R (proche de l'objectif) : on garde 60 % · puis stop suiveur (ATR). */
+  /* Recalcul à la demande (bouton) : en gain, on sécurise ; en perte, on minimise les dégâts. */
+  recalc() {
+    const q = this.pos, cfg = this.cfg;
+    if (!q) return 'Aucune position ouverte.';
+    const a = this.a, price = this.lastPrice;
+    const atr = (a && a.atr) || q.risk / cfg.slAtr;
+    const feeD = this.feeFor(q.qty, q.entry) / q.qty;
+    const gain = q.dir * (price - q.entry), unreal = gain * q.qty;
+    const conf = !!(a && a.ready && q.dir * a.score >= cfg.thr * 0.5 && a.adx >= 18);
+    const oldSl = q.sl, oldTp = q.tp;
+    const lim = price - q.dir * 0.3 * atr;                          // jamais collé au prix : le bruit le toucherait
+    const setSl = (v) => {
+      v = q.dir > 0 ? Math.min(v, lim) : Math.max(v, lim);
+      if (q.dir * (v - q.sl) > 0) { q.sl = v; q.kind = 'manual'; q.be = true; }
+    };
+    let txt;
+    if (gain > feeD * 1.1) {
+      // en gain : stop sur au moins le point mort, la moitié du gain actuel, ou 0,8 ATR derrière le prix
+      const best = (...v) => (q.dir > 0 ? Math.max(...v) : Math.min(...v));       // le niveau le plus protecteur selon le sens
+      setSl(best(q.entry + q.dir * feeD * 1.1, q.entry + q.dir * 0.5 * gain, price - q.dir * 0.8 * atr));
+      if (conf) { if (q.dir * (q.tp - price) < 1.5 * atr) q.tp = price + q.dir * 1.5 * atr; }
+      else { const c = price + q.dir * Math.max(0.6 * atr, feeD * 1.5); if (q.dir * (c - q.tp) < 0) q.tp = c; }
+      const secured = q.dir * (q.sl - q.entry) * q.qty;
+      txt = `Recalcul (position en gain, ${unreal >= 0 ? '+' : ''}${unreal.toFixed(2)} USDT) : stop ${fmtP(oldSl)} → ${fmtP(q.sl)} (${secured >= 0 ? '+' : ''}${secured.toFixed(2)} USDT garantis). ` +
+        (conf ? `Le marché confirme : objectif ${q.tp !== oldTp ? 'repoussé à ' + fmtP(q.tp) : 'conservé à ' + fmtP(q.tp)}.` : (q.tp !== oldTp ? `Le marché ne confirme plus : objectif rapproché à ${fmtP(q.tp)} pour encaisser plus vite.` : `Le marché ne confirme plus, mais l'objectif ${fmtP(q.tp)} est déjà proche : conservé.`));
+    } else {
+      // en perte (ou gain qui ne couvre pas les frais) : on rapproche le stop (distance restante divisée par deux, 0,8 ATR minimum)
+      const remain = q.dir * (price - q.sl);
+      setSl(price - q.dir * Math.max(0.8 * atr, 0.5 * remain));
+      if (!conf) { const be = q.entry + q.dir * feeD * 1.3; if (q.dir * (be - q.tp) < 0 && q.dir * (be - price) > 0) q.tp = be; }
+      const worst = -q.dir * (q.sl - q.entry) * q.qty;
+      txt = `Recalcul (position ${unreal < 0 ? 'en perte' : 'à peine en gain'}, ${unreal >= 0 ? '+' : ''}${unreal.toFixed(2)} USDT) : stop ${fmtP(oldSl)} → ${fmtP(q.sl)}, perte maximale ramenée à ${Math.max(0, worst).toFixed(2)} USDT. ` +
+        (conf ? `Le marché reste dans ton sens : objectif conservé à ${fmtP(q.tp)}.` : (q.tp !== oldTp ? `Le marché ne confirme pas : objectif ramené au point mort ${fmtP(q.tp)}, pour sortir sans perte si le prix remonte.` : `Le marché ne confirme pas, objectif conservé à ${fmtP(q.tp)}.`));
+    }
+    this.pushStop();
+    this.log('info', txt);
+    return txt;
+  }
+
+  /* Frais aller-retour retenus pour une position : la valeur saisie, mais jamais moins que le coût réel estimé (ordres au marché + glissement). */
+  feeFor(qty, price) { return Math.max(this.cfg.feeUsd || 0, qty * price * 2 * (feeRate(this.cfg.market) + this.cfg.slip)); }
+
+  /* Distance de prix correspondant au gain visé (en % de la marge) */
+  targetDist(price) {
+    const costs = price * 2 * (feeRate(this.cfg.market) + this.cfg.slip);          // frais + glissement aller-retour, en prix
+    // le gain visé est NET : on ajoute les frais pour que, une fois payés, il reste bien le gain demandé
+    const want = ((this.cfg.gainTarget / 100) * price) / (this.fut ? this.cfg.leverage : 1) + costs;
+    return Math.max(want, (this.cfg.costMult ?? 6) * costs);                          // le gain visé ne descend jamais sous 6 x les frais (mesuré : en dessous, les frais mangent le gain)
+  }
+
+  roiOf(dist, price) { return (dist / price) * (this.fut ? this.cfg.leverage : 1) * 100; }
+
+  /* Peut-on laisser courir au-delà du gain visé ? Oui si la tendance est toujours là. */
+  canRun() {
+    const a = this.a, q = this.pos;
+    if (!a || !a.ready || !q) return false;
+    return q.dir * a.score >= this.cfg.thr * 0.5 && a.adx >= 18;
+  }
+
+  /* Gain visé atteint et marché toujours porteur : le stop passe à 80 % du gain visé et l'objectif est repoussé. */
+  extendRun(p) {
+    const q = this.pos;
+    q.ext = true;
+    const lock = q.entry + q.dir * 0.8 * q.T;
+    if (q.dir * (lock - q.sl) > 0) { q.sl = lock; q.kind = 'lock'; }
+    q.tp = q.entry + q.dir * (this.cfg.stretch ?? 4) * q.T;
+    this.log('info', `Gain visé atteint (${this.roiOf(q.T, q.entry).toFixed(1)} % de la marge) et tendance toujours forte : le trade continue. Stop remonté à ${fmtP(q.sl)} (80 % du gain gardé), nouvel objectif ${fmtP(q.tp)}.`);
+    this.pushStop();
+  }
+
+  /* Stop sur la structure : à chaque bougie, si le trade est en gain, le stop se place derrière les 3 dernières bougies. */
+  structTrail(a) {
+    const q = this.pos;
+    if (!q || !a || a.low3 === undefined) return;
+    const price = this.lastPrice;
+    if (q.dir * (price - q.entry) <= 0) return;
+    const cand = q.dir > 0 ? a.low3 - 0.15 * a.atr : a.high3 + 0.15 * a.atr;
+    if (q.dir * (price - cand) < 0.5 * a.atr) return;           // trop près du prix : le bruit le toucherait
+    if (q.dir * (cand - (q.structSl ?? -q.dir * Infinity)) > 0) q.structSl = cand;
+  }
+
+  /* Cliquet intelligent : le stop ne fait que se rapprocher du prix, à chaque prix reçu, depuis le meilleur niveau atteint.
+     g = avancée vers le gain visé :
+       frais couverts (>= 1,8 x frais A/R) : point mort · 50 % : 30 % du gain gardé · 80 % : 55 % · 100 % : 80 % du gain visé ·
+       120 % : tout le gain visé · puis stop suiveur sur l'ATR (plus serré quand on s'éloigne). La structure (3 dernières bougies) peut remonter le stop à chaque bougie. */
   ratchet() {
     const q = this.pos, cfg = this.cfg;
     if (!q) return;
-    const R = q.risk, m = q.dir * (q.extreme - q.entry), mR = m / R;
+    const T = q.T, m = q.dir * (q.extreme - q.entry), g = T > 0 ? m / T : 0;
+    const feeD = this.feeFor(q.qty, q.entry) / q.qty;                    // frais aller-retour, en unités de prix
+    const atr = (this.a && this.a.atr) || q.risk / cfg.slAtr;
     let lock = null, kind = null;
-    // point mort réel : frais aller-retour + glissement estimé + petite marge
-    const buf = q.entry * (feeRate(cfg.market) * 2 + cfg.slip * 2 + 0.0002);
-    if (cfg.lockFees && m >= buf * cfg.lockMult) { lock = buf; kind = 'fees'; }
-    if (mR >= 0.5 && m >= buf * 1.2) { lock = Math.max(lock === null ? -Infinity : lock, buf); kind = 'be'; }
-    if (mR >= 1) { lock = Math.max(lock, 0.35 * m); kind = 'lock'; }
-    if (mR >= 1.4) { lock = Math.max(lock, 0.6 * m); kind = 'lock'; }
-    // montée progressive : dès que le prix avance, le stop remonte d'une fraction du gain (la perte possible diminue sans cesse)
-    if (cfg.stepK > 0 && m > 0) {
-      const st = -R + cfg.stepK * m;
-      if (lock === null || st > lock) { lock = st; kind = 'step'; }
-    }
+    const up = (v, k) => { if (lock === null || v > lock) { lock = v; kind = k; } };
+    const lk = cfg.lk || LK;
+    if (m >= Math.max(feeD * lk.fm, lk.fa * atr)) up(feeD * 1.1, 'fees');
+    for (const [gg, ff] of lk.steps) if (g >= gg) up(Math.max(ff * m, feeD * 1.1), 'lock');
+    if (g >= 1.0) up(0.8 * T, 'lock');
+    if (g >= 1.2) up(1.0 * T, 'lock');
     let cand = lock === null ? null : q.entry + q.dir * lock;
-    if (cfg.trailing && mR >= 1) {
-      const atr = (this.a && this.a.atr) || R / cfg.slAtr;
-      const t = q.extreme - q.dir * atr * cfg.trailAtr;
+    if (cfg.trailing && g >= 0.8) {
+      const k = cfg.trailAtr * (q.tight ? 0.5 : g >= 1.5 ? 0.8 : 1);
+      const t = q.extreme - q.dir * atr * k;
       if (cand === null || q.dir * (t - cand) > 0) { cand = t; kind = 'trail'; }
     }
+    if (q.structSl !== undefined && (cand === null || q.dir * (q.structSl - cand) > 0)) { cand = q.structSl; kind = 'struct'; }
     if (cand === null || q.dir * (cand - q.sl) <= 0) return;
-    if (q.dir * (cand - q.sl) < Math.max(q.entry * 0.0002, R * 0.05) && q.kind) return;
+    if (q.dir * (cand - q.sl) < Math.max(q.entry * 0.0002, q.risk * 0.05) && q.kind) return;
     const first = !q.kind;
     q.sl = cand; q.kind = kind; q.be = true;
-    if (first || kind !== q.lastLogged) { q.lastLogged = kind; this.log('info', kind === 'fees' ? `Gain supérieur aux frais : stop remonté à ${fmtP(cand)} (point mort). Ce trade ne peut plus finir en perte.` : kind === 'be' ? 'Position à +0,5R : stop au point mort.' : kind === 'step' ? `Stop remonté à ${fmtP(cand)} : la perte maximale n'est plus que ${(Math.max(0, q.dir * (q.entry - cand)) * q.qty).toFixed(2)} USDT, et il continue de monter avec le prix.` : kind === 'lock' ? `Gain sécurisé : stop remonté à ${fmtP(cand)} (${((q.dir * (cand - q.entry)) / R).toFixed(2)} R garanti).` : `Stop suiveur actif à ${fmtP(cand)}.`); }
+    if (first || kind !== q.lastLogged) {
+      q.lastLogged = kind;
+      const secured = q.dir * (cand - q.entry) * q.qty;
+      this.log('info', kind === 'fees' ? `Gain supérieur aux frais : stop remonté à ${fmtP(cand)} (point mort, frais couverts).`
+        : kind === 'lock' ? `Gain sécurisé : stop remonté à ${fmtP(cand)} (${secured >= 0 ? '+' : ''}${secured.toFixed(2)} USDT garantis).`
+        : kind === 'struct' ? `Stop remonté à ${fmtP(cand)} derrière la structure du marché${secured < 0 ? ` (perte maximale réduite à ${(-secured).toFixed(2)} USDT)` : ''}.`
+        : `Stop suiveur actif à ${fmtP(cand)}.`);
+    }
   }
 
   /* Envoie le nouveau stop à Binance (au plus toutes les 2 s). Le bot garde aussi son propre contrôle à chaque prix. */
@@ -902,12 +1046,12 @@ class Bot {
   async consider(a, c) {
     const cfg = this.cfg;
     if (this.status === 'paused_day') { this.skip('Pause : limite de perte journalière atteinte.'); return; }
-    if (this.cooldown > 0) { this.cooldown--; this.skip(`Temps de repos après la dernière sortie : encore ${this.cooldown} bougie(s) avant de pouvoir ré-entrer (réglable dans les paramètres avancés).`); return; }
+    if (this.cooldown > 0 && !this.reversing) { this.cooldown--; this.skip(`Temps de repos après la dernière sortie : encore ${this.cooldown} bougie(s) avant de pouvoir ré-entrer (réglable dans les paramètres avancés).`); return; }
     const s = a.score, thr = cfg.thr;
     const side = s >= thr ? 1 : s <= -thr ? -1 : 0;
     if (!side) { this.decision = { kind: 'wait', text: `En attente : score ${s > 0 ? '+' : ''}${s}, il faut au moins ±${thr}.` }; return; }
     if (side < 0 && !(this.fut && cfg.allowShort)) { this.skip('Signal vendeur ignoré (pas de vente à découvert en Spot ou short désactivé).'); return; }
-    if (cfg.confirmCandle && this.prevScore * side < thr * 0.6) { this.skip(`Signal ${side > 0 ? 'acheteur' : 'vendeur'} (${s}) à confirmer à la prochaine bougie.`); return; }
+    if (cfg.confirmCandle && !this.reversing && this.prevScore * side < thr * 0.6) { this.skip(`Signal ${side > 0 ? 'acheteur' : 'vendeur'} (${s}) à confirmer à la prochaine bougie.`); return; }
     if (cfg.htfGate && a.htfReady && a.parts.htf * side <= 0) { this.skip('Signal refusé : le timeframe supérieur va dans l\'autre sens.'); return; }
     if (a.range > 4 * a.atr) { this.skip('Bougie trop violente (mèche anormale), le bot attend.'); return; }
     if (cfg.entryFilter) {
@@ -922,12 +1066,10 @@ class Bot {
       const beyond = side > 0 ? price - (a.swingLow - 0.2 * a.atr) : (a.swingHigh + 0.2 * a.atr) - price;
       if (beyond > stopDist) stopDist = Math.min(beyond, a.atr * 3.5);
     }
-    const roundTrip = 2 * (feeRate(cfg.market) + cfg.slip);
-    const tpPct = (stopDist * cfg.rr) / price;
-    if (cfg.costFilter && tpPct < 2 * roundTrip) {
-      this.skip(`Ignoré : objectif ${(tpPct * 100).toFixed(2)} % trop proche des frais aller-retour (${(roundTrip * 100).toFixed(2)} %). Choisis un timeframe plus long.`);
-      return;
-    }
+    // gain visé (en % de la marge) converti en distance de prix. Le stop est borné pour garder un rapport gain/risque raisonnable.
+    const Tdist = this.targetDist(price);
+    stopDist = Math.min(stopDist, Math.max(a.atr * (cfg.sfloor ?? 1.0), (cfg.sc ?? 1.5) * Tdist));
+    stopDist = Math.max(stopDist, price * 0.0005);
     /* Taille : part du budget engagée (alloc), modulée par la force du signal (60 % à 100 % de cette part),
        puis plafonnée pour que la perte, si le stop est touché, ne dépasse pas riskPct du capital. */
     const conv = clamp(0.6 + (0.4 * (Math.abs(s) - thr)) / Math.max(1, (100 - thr) * 0.6), 0.6, 1);
@@ -951,20 +1093,27 @@ class Bot {
       const liqDist = 1 / cfg.leverage - 0.005;
       if (stopDist / price > liqDist * 0.7) { this.skip(`Levier x${cfg.leverage} trop élevé pour ce stop : la liquidation serait trop proche.`); return; }
     }
-    await this.openPosition(side, a, price, qty, stopDist);
+    const gainUsd = Tdist * qty;
+    const feeUsd = this.feeFor(qty, price), feeNeed = feeUsd * (this.reversing ? 3 : 1.5);
+    if (cfg.costFilter && gainUsd < feeNeed) {
+      this.skip(`Ignoré : le gain visé (${gainUsd.toFixed(2)} USDT) ne couvre pas assez les frais aller-retour (${feeUsd.toFixed(2)} USDT${this.reversing ? ', doubles frais en cas d\'inversion' : ''}). Augmente le gain visé, le levier ou le budget.`);
+      return;
+    }
+    await this.openPosition(side, a, price, qty, stopDist, Tdist);
   }
 
-  async openPosition(side, a, price, qty, stopDist) {
+  async openPosition(side, a, price, qty, stopDist, Tdist) {
     const cfg = this.cfg;
     this.busy = true;
     try {
       const fill = await this.broker.open(side, qty, price);
       const entry = fill.price, q = fill.qty;
-      const sl = entry - side * stopDist, tp = entry + side * stopDist * cfg.rr;
+      const T = Tdist || this.targetDist(entry);
+      const sl = entry - side * stopDist, tp = entry + side * T;
       const notional = q * entry;
       const locked = this.fut ? notional / cfg.leverage : notional;
       const pos = {
-        dir: side, qty: q, entry, sl, tp, sl0: sl, risk: stopDist, extreme: entry, bars: 0,
+        dir: side, qty: q, entry, sl, tp, tpEx: cfg.runOn ? entry + side * (cfg.stretch ?? 4) * T : tp, sl0: sl, risk: stopDist, T, ext: false, extreme: entry, bars: 0,
         be: false, trailing: false, kind: null, slSent: sl, feeOpen: fill.fee, locked, notional, t: this.lastT, wall: Date.now(),
         liq: this.fut ? entry * (1 - side * (1 / cfg.leverage - 0.005)) : null, ids: {},
       };
@@ -981,7 +1130,8 @@ class Bot {
       this.pos = pos;
       this.markers.push({ t: this.lastT, p: entry, type: side > 0 ? 'buy' : 'sell' });
       const eqNow = this.cash + locked + fill.fee, lossIfSl = stopDist * q;
-      this.log('trade', `${side > 0 ? 'ACHAT (long)' : 'VENTE (short)'} ${q.toFixed(6)} ${cfg.symbol.replace('USDT', '')} à ${fmtP(entry)} · stop ${fmtP(sl)} · objectif ${fmtP(tp)}` +
+      const net = this.roiOf(T, entry) - this.roiOf(entry * 2 * (feeRate(cfg.market) + cfg.slip), entry);
+      this.log('trade', `${side > 0 ? 'ACHAT (long)' : 'VENTE (short)'} ${q.toFixed(6)} ${cfg.symbol.replace('USDT', '')} à ${fmtP(entry)} · stop ${fmtP(sl)} · objectif ${fmtP(tp)} (${this.roiOf(T, entry).toFixed(1)} % de la marge en brut, soit environ ${net.toFixed(1)} % net après frais${net > cfg.gainTarget * 1.05 ? ', relevé : le gain visé doit valoir au moins 6 fois les frais' : ''})` +
         (this.fut ? ` · levier x${cfg.leverage}` : '') + ` · marge engagée ${locked.toFixed(2)} USDT (${((locked / eqNow) * 100).toFixed(0)} % du capital), perte si stop ${lossIfSl.toFixed(2)} USDT (${((lossIfSl / eqNow) * 100).toFixed(1)} %). Raison : ${explain(a, side)}.`);
       this.decision = { kind: 'hold', text: 'Position ouverte.' };
     } catch (e) {
@@ -1250,7 +1400,7 @@ class LiveBroker {
     if (!this.fut) return;
     const sl = await this.algo(pos, 'STOP_MARKET', pos.sl);
     pos.ids.sl = sl.algoId;
-    try { const tp = await this.algo(pos, 'TAKE_PROFIT_MARKET', pos.tp); pos.ids.tp = tp.algoId; }
+    try { const tp = await this.algo(pos, 'TAKE_PROFIT_MARKET', pos.tpEx ?? pos.tp); pos.ids.tp = tp.algoId; }
     catch (e) {
       try { await this.call('DELETE', '/fapi/v1/algoOrder', { algoId: pos.ids.sl }, true); } catch (e2) { /* ignoré */ }
       throw e;
@@ -1415,32 +1565,25 @@ class LiveFeed {
 /* ---------------- État ---------------- */
 const MODE_HINT = {
   paper: 'Vraies données Binance en direct (chart, bougies, filtres de quantité, frais), mais les ordres sont simulés : aucun argent, aucune clé API. Le meilleur moyen de tester le bot dans les conditions réelles.',
-  sim: 'Prix synthétiques générés ici. Idéal pour comprendre le bot, sans aucun risque. Les résultats ne prouvent rien sur les vrais marchés.',
-  testnet: 'Vrais prix et vrais ordres sur Binance Testnet, avec de l\'argent fictif. Crée des clés sur testnet.binance.vision (Spot) ou testnet.binancefuture.com (Futures).',
-  live: 'Ordres réels avec ton argent. Commence par le Testnet.',
-};
-const PROF_HINT = {
-  prudent: 'Peu de trades, signaux très nets. Engage environ 30 % du budget, perte maximale 3 % par trade.',
-  equilibre: 'Compromis entre fréquence et qualité. Engage environ 60 % du budget, perte maximale 8 % par trade.',
-  agressif: 'Plus de trades, signaux moins stricts. Peut engager tout le budget, perte maximale 25 % par trade : une série de pertes peut vider le compte vite.',
-  perso: 'Réglages personnalisés.',
+  live: 'Ordres réels avec ton argent. Teste d\'abord en mode Papier.',
 };
 const NUMS = [
-  ['thr', 'thr', 10, 90, false], ['alloc', 'alloc', 5, 100, false], ['riskPct', 'riskPct', 0.5, 100, false], ['slAtr', 'slAtr', 0.5, 6, false], ['rr', 'rr', 0.8, 6, false],
-  ['trailAtr', 'trailAtr', 0.5, 6, false], ['maxBars', 'maxBars', 3, 500, true], ['maxDailyLoss', 'maxDailyLoss', 0.5, 50, false], ['maxDD', 'maxDD', 2, 80, false], ['lockMult', 'lockMult', 1.1, 10, false], ['cooldown', 'cooldown', 0, 20, true], ['stepK', 'stepK', 0, 0.95, false],
+  ['thr', 'thr', 10, 90, false], ['alloc', 'alloc', 5, 100, false], ['riskPct', 'riskPct', 0.5, 100, false], ['slAtr', 'slAtr', 0.5, 6, false],
+  ['gainTarget', 'gainTarget', 0.5, 100, false], ['feeUsd', 'feeUsd', 0, 1000, false],
+  ['trailAtr', 'trailAtr', 0.5, 6, false], ['maxBars', 'maxBars', 3, 500, true], ['maxDailyLoss', 'maxDailyLoss', 0.5, 50, false], ['maxDD', 'maxDD', 2, 80, false],
+  ['cooldown', 'cooldown', 0, 20, true],
   ['budget', 'budget', 5, 10000000, false],
 ];
-const CHECKS = [['entryFilter', 'entryFilter'], ['structStop', 'structStop'], ['lockFees', 'lockFees'], ['trailing', 'trailing'], ['allowShort', 'allowShort'], ['htfGate', 'htfGate'], ['confirmCandle', 'confirmCandle'], ['costFilter', 'costFilter'], ['closeOnStop', 'closeOnStop']];
-const PROF_KEYS = ['thr', 'alloc', 'riskPct', 'slAtr', 'rr', 'trailAtr', 'maxBars'];
+const CHECKS = [['entryFilter', 'entryFilter'], ['structStop', 'structStop'], ['dailyLossOn', 'dailyLossOn'], ['runOn', 'runOn'], ['reverse', 'reverse'], ['trailing', 'trailing'], ['allowShort', 'allowShort'], ['htfGate', 'htfGate'], ['confirmCandle', 'confirmCandle'], ['costFilter', 'costFilter'], ['closeOnStop', 'closeOnStop']];
 
 let cfg = { ...DEFAULTS, closeOnStop: true };
 try {
   const j = JSON.parse(localStorage.getItem('autotrader.cfg') || 'null');
-  if (j) cfg = { ...cfg, ...j, apiKey: '', apiSecret: '' };
+  if (j) { cfg = { ...cfg, ...j, apiKey: '', apiSecret: '' }; if (j.riskLevel === undefined) Object.assign(cfg, riskParams(100), { riskLevel: 100 }); }
 } catch (e) { /* stockage indisponible */ }
-if (IS_ARTIFACT && cfg.mode !== 'sim') cfg.mode = 'sim';
+if (IS_ARTIFACT) cfg.mode = 'sim';
+else if (cfg.mode !== 'paper' && cfg.mode !== 'live') cfg.mode = 'paper';
 if (!TFS.includes(cfg.tf)) cfg.tf = '5m';
-try { const old = JSON.parse(localStorage.getItem('autotrader.cfg') || 'null'); if (old && old.alloc === undefined) Object.assign(cfg, PROFILES[cfg.profile] || PROFILES.equilibre); } catch (e) { /* ignoré */ }
 
 const S = {
   bot: null, builder: null, market: null, feed: null, broker: null, running: false, stopping: false,
@@ -1482,20 +1625,13 @@ function buildTfChips() {
   });
 }
 
-const PROFILE_LEVEL = { prudent: 50, equilibre: 100, agressif: 150 };
-function applyProfile(name) {
-  cfg.profile = name;
-  cfg.riskLevel = PROFILE_LEVEL[name] ?? cfg.riskLevel;
-  Object.assign(cfg, riskParams(cfg.riskLevel));
-  writeNums();
-}
 function writeNums() {
   NUMS.forEach(([id, key]) => { $(id).value = cfg[key]; });
   CHECKS.forEach(([id, key]) => { $(id).checked = !!cfg[key]; });
 }
 
 function refreshControls() {
-  setSeg('segMode', cfg.mode); setSeg('segMarket', cfg.market); setSeg('segProfile', cfg.profile);
+  setSeg('segMode', cfg.mode); setSeg('segMarket', cfg.market);
   const fut = cfg.market === 'futures';
   $('levBox').hidden = !fut; $('spotHint').hidden = fut; $('shortRow').hidden = !fut;
   $('leverage').value = cfg.leverage; $('levVal').textContent = '×' + cfg.leverage;
@@ -1515,19 +1651,23 @@ function refreshControls() {
   $('speed').value = String(cfg.speed);
   const per = TF_SEC[cfg.tf] / cfg.speed;
   $('speedHint').textContent = `Une bougie ${cfg.tf} dure environ ${per >= 10 ? Math.round(per) : per.toFixed(1)} s à l'écran.`;
-  $('profHint').textContent = PROF_HINT[cfg.profile] || PROF_HINT.perso;
-  const rl = cfg.riskLevel ?? PROFILE_LEVEL[cfg.profile] ?? 100;
+  const rl = cfg.riskLevel ?? 100;
   $('riskLevel').value = rl; $('riskVal').textContent = rl + ' %';
   $('riskHint').textContent = `À ${rl} % de risque : le bot engage jusqu'à ${cfg.alloc} % du budget, accepte de perdre au plus ${cfg.riskPct} % du capital par trade et entre à partir d'un score de ±${cfg.thr}.` + (rl >= 150 ? ' Zone dangereuse : une courte série de pertes peut vider le compte.' : rl === 0 ? ' Positions minuscules : les gains et les pertes seront très faibles.' : '');
   $('riskHint').className = 'hint' + (rl >= 150 ? ' warn' : '');
   const rt = 2 * (feeRate(cfg.market) + cfg.slip) * 100;
+  {
+    const lv = cfg.market === 'futures' ? cfg.leverage : 1, wantPx = cfg.gainTarget / lv, wantPx2 = wantPx + rt, effPx2 = Math.max(wantPx2, 6 * rt);
+    $('gainHint').textContent = `Gain visé ${cfg.gainTarget} % de la marge NET après frais. Les frais aller-retour coûtent ${rt.toFixed(2)} % de prix (${(rt * lv).toFixed(1)} % de la marge) : le bot vise donc ${(cfg.gainTarget + rt * lv).toFixed(1)} % en brut. ` +
+      (effPx2 > wantPx2 * 1.001 ? `Ce niveau est relevé à ${(effPx2 * lv).toFixed(1)} % de la marge, car le gain visé doit valoir au moins 6 fois les frais, sinon ils mangent le gain. ` : '') +
+      'Une fois le gain visé atteint, si la tendance continue, le bot laisse courir avec le stop à 80 % de ce gain.';
+  }
   $('costHint').textContent = `Frais estimés : ${rt.toFixed(2)} % par trade aller-retour (${cfg.market === 'futures' ? 'Futures' : 'Spot'}, ordres au marché, glissement inclus).`;
   $('symbol').value = cfg.symbol;
   const b = $('banner');
-  b.className = 'banner' + (cfg.mode === 'live' ? ' live' : cfg.mode === 'testnet' || cfg.mode === 'paper' ? ' test' : '');
+  b.className = 'banner' + (cfg.mode === 'live' ? ' live' : ' test');
   b.textContent = cfg.mode === 'live' ? 'MODE RÉEL : le bot passe de vrais ordres avec ton argent. Garde cet onglet ouvert et visible tant que le bot tourne.'
     : cfg.mode === 'paper' ? 'Mode Papier : prix réels de Binance en direct, ordres simulés, aucun argent engagé. Garde cet onglet ouvert tant que le bot tourne.'
-    : cfg.mode === 'testnet' ? 'Mode Testnet : ordres réels sur Binance Testnet, argent fictif. Garde cet onglet ouvert tant que le bot tourne.'
     : 'Mode simulation : prix synthétiques, aucun ordre envoyé. Les résultats montrent le fonctionnement du bot, pas sa rentabilité réelle.';
   $('bannerArtifact').hidden = !IS_ARTIFACT;
   $('segMode').querySelectorAll('button').forEach((x) => { if (IS_ARTIFACT && x.dataset.v !== 'sim') x.disabled = true; });
@@ -1537,10 +1677,9 @@ function bindControls() {
   bindSeg('segMode', (v) => { cfg.mode = v; saveCfg(); refreshControls(); });
   bindSeg('segMarket', (v) => { cfg.market = v; if (v === 'spot') cfg.leverage = Math.max(1, cfg.leverage); saveCfg(); refreshControls(); schedulePreview(); });
   $('riskLevel').addEventListener('input', (e) => {
-    cfg.riskLevel = +e.target.value; cfg.profile = 'perso';
+    cfg.riskLevel = +e.target.value;
     Object.assign(cfg, riskParams(cfg.riskLevel)); writeNums(); saveCfg(); refreshControls();
   });
-  bindSeg('segProfile', (v) => { applyProfile(v); saveCfg(); refreshControls(); });
   $('leverage').addEventListener('input', (e) => { cfg.leverage = +e.target.value; saveCfg(); refreshControls(); });
   $('symbol').addEventListener('change', (e) => { cfg.symbol = e.target.value; saveCfg(); schedulePreview(); });
   $('speed').addEventListener('change', (e) => { cfg.speed = +e.target.value; saveCfg(); refreshControls(); });
@@ -1551,12 +1690,17 @@ function bindControls() {
       let v = parseFloat(el.value); if (!isFinite(v)) return;
       v = Math.min(max, Math.max(min, v)); if (int) v = Math.round(v);
       cfg[key] = v;
-      if (PROF_KEYS.includes(key)) { cfg.profile = 'perso'; setSeg('segProfile', ''); $('profHint').textContent = PROF_HINT.perso; }
-      saveCfg();
+      saveCfg(); refreshControls();
     });
     el.addEventListener('change', () => { el.value = cfg[key]; });
   });
   CHECKS.forEach(([id, key]) => { $(id).addEventListener('change', (e) => { cfg[key] = e.target.checked; saveCfg(); }); });
+  $('recalc').addEventListener('click', () => {
+    const bot = S.bot;
+    if (!S.running || !bot || !bot.pos || bot.busy) return;
+    toast(bot.recalc());
+    render();
+  });
   $('closeNow').addEventListener('click', async () => {
     const bot = S.bot;
     if (!S.running || !bot || !bot.pos) return;
@@ -1953,7 +2097,7 @@ function renderDecision(a, bot) {
 
 function renderPosition(bot, price) {
   const box = $('posBox');
-  $('closeNow').hidden = !(S.running && bot && bot.pos);
+  $('posActions').hidden = !(S.running && bot && bot.pos);
   if (!bot || !bot.pos) {
     $('posNote').textContent = '';
     box.innerHTML = '<p class="empty">Aucune position ouverte. Le bot attend un signal assez net.</p>';
@@ -1968,7 +2112,7 @@ function renderPosition(bot, price) {
     <div><span>Résultat latent</span><b class="${cls(un)}">${signed(un)} USDT (${signed(pct, 1)} %)</b></div>
     <div><span>Entrée</span><b>${fmtP(q.entry)}</b></div>
     <div><span>Prix actuel</span><b>${fmtP(p)}</b></div>
-    <div><span>Stop</span><b class="neg">${fmtP(q.sl)}${q.trailing ? ' (suiveur)' : q.be ? ' (point mort)' : ''}</b></div>
+    <div><span>Stop</span><b class="neg">${fmtP(q.sl)}${q.trailing ? ' (suiveur)' : q.dir * (q.sl - q.entry) > 0 ? ' (gain sécurisé)' : q.kind ? ' (remonté)' : ''}</b></div>
     <div><span>Objectif</span><b class="pos">${fmtP(q.tp)}</b></div>
     <div><span>Taille</span><b>${money(q.notional)} USDT</b></div>
     <div><span>${bot.fut ? 'Liquidation' : 'Capital engagé'}</span><b>${bot.fut ? fmtP(q.liq) : money(q.locked) + ' USDT'}</b></div>
