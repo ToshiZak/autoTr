@@ -1,0 +1,2118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AutoTrader">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%23166534%27/%3E%3Cpath d=%27M18 70 L38 48 L54 60 L82 28%27 stroke=%27white%27 stroke-width=%278%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+<style>:root{color-scheme:light}[hidden]{display:none!important}</style>
+<title>Autotrader Crypto</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Mise en page : colonne de réglages à gauche, tableau de bord à droite. Sur mobile, tout s'empile. */
+:root {
+  --bg: #EEF1F5; --surface: #FFFFFF; --surface2: #E6EBF1; --line: #D3DAE3;
+  --fg: #0F1824; --muted: #566274; --grid: #E3E8EF;
+  --accent: #2457E6; --accent-fg: #FFFFFF; --accent-soft: #DCE5FB;
+  --up: #0B8F63; --up-soft: #D5F1E6; --down: #CF2638; --down-soft: #FADCDF;
+  --warn: #8F5B00; --warn-soft: #FAEBCB;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-head: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0E13; --surface: #11171E; --surface2: #19212B; --line: #243040;
+    --fg: #E7ECF3; --muted: #8B98AB; --grid: #18212B;
+    --accent: #6C93FF; --accent-fg: #0A0E13; --accent-soft: #1B2A4F;
+    --up: #2BD39A; --up-soft: #0F2E26; --down: #FF6070; --down-soft: #351B20;
+    --warn: #F2B84B; --warn-soft: #3A2D12; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0E13; --surface: #11171E; --surface2: #19212B; --line: #243040;
+  --fg: #E7ECF3; --muted: #8B98AB; --grid: #18212B;
+  --accent: #6C93FF; --accent-fg: #0A0E13; --accent-soft: #1B2A4F;
+  --up: #2BD39A; --up-soft: #0F2E26; --down: #FF6070; --down-soft: #351B20;
+  --warn: #F2B84B; --warn-soft: #3A2D12; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 14px; line-height: 1.45;
+  padding-block: 0 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1440px; margin: 0 auto; }
+h1, h2, h3, p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ---- En-tête ---- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 12px 0; background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mark {
+  width: 36px; height: 36px; border-radius: 6px; background: var(--fg); color: var(--bg);
+  display: grid; place-items: center; font-family: var(--font-head); font-weight: 600; font-size: 15px; letter-spacing: .04em; flex: none;
+}
+.brand h1 { font-family: var(--font-head); font-weight: 600; font-size: 20px; letter-spacing: .01em; }
+.brand p { color: var(--muted); font-size: 12px; }
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 999px;
+  background: var(--surface2); font-size: 12.5px; font-weight: 500; white-space: nowrap;
+}
+.pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.pill.ok i { background: var(--up); } .pill.ok { background: var(--up-soft); }
+.pill.warn i { background: var(--warn); } .pill.warn { background: var(--warn-soft); }
+.pill.err i { background: var(--down); } .pill.err { background: var(--down-soft); }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 8px 14px; font-weight: 500;
+}
+.btn:hover { background: var(--surface2); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.go { background: var(--accent); color: var(--accent-fg); border-color: transparent; padding: 9px 20px; font-weight: 600; min-width: 150px; }
+.go:hover { background: var(--accent); filter: brightness(1.08); }
+.go.stop { background: var(--down); color: #fff; }
+
+.banner { margin-top: 12px; padding: 9px 12px; border-radius: 6px; font-size: 13px; background: var(--accent-soft); }
+.banner.live { background: var(--down-soft); color: var(--down); font-weight: 500; }
+.banner.test { background: var(--warn-soft); color: var(--warn); }
+.banner + .banner { margin-top: 8px; }
+
+/* ---- Mise en page ---- */
+.layout { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+@media (min-width: 1000px) { .layout { grid-template-columns: 340px minmax(0, 1fr); align-items: start; } }
+.config, .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.config { padding: 4px 16px 16px; min-width: 0; }
+.config.locked { opacity: .72; }
+.grp { padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.grp:last-child { border-bottom: 0; padding-bottom: 0; }
+h2 { font-family: var(--font-head); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.hint { color: var(--muted); font-size: 12px; }
+.hint.warn { color: var(--warn); }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface2); }
+.seg button { flex: 1; border: 0; background: transparent; padding: 8px 6px; font-weight: 500; font-size: 13px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.on { background: var(--accent); color: var(--accent-fg); }
+.seg button:disabled { opacity: .45; cursor: not-allowed; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button {
+  border: 1px solid var(--line); background: var(--surface2); border-radius: 6px; padding: 6px 10px; min-width: 44px;
+  font-family: var(--font-mono); font-size: 12.5px;
+}
+.chips button.on { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+.field { display: grid; gap: 5px; }
+.field label, .lbl { font-size: 12.5px; color: var(--muted); }
+.field input[type=text], .field input[type=password], .field input[type=number], .field select {
+  width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-family: var(--font-mono); font-size: 13px;
+}
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.slider { display: flex; align-items: center; gap: 12px; }
+.slider input { flex: 1; min-width: 0; accent-color: var(--accent); }
+.slider b { font-family: var(--font-mono); min-width: 44px; text-align: right; font-size: 15px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; }
+.check input { margin-top: 3px; accent-color: var(--accent); flex: none; }
+details.adv summary { cursor: pointer; font-weight: 500; font-size: 13px; padding: 2px 0; }
+details.adv[open] summary { margin-bottom: 10px; }
+.advgrid { display: grid; gap: 10px; }
+.conn-out { font-size: 12.5px; display: grid; gap: 3px; }
+.conn-out .bad { color: var(--down); font-weight: 500; }
+.conn-out .good { color: var(--up); }
+
+.dash { display: grid; gap: 16px; min-width: 0; }
+.card { padding: 14px 16px; min-width: 0; }
+.card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+
+/* ---- Indicateurs clés ---- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); padding: 0; overflow: hidden; }
+.kpi { padding: 12px 16px; border-left: 1px solid var(--line); display: grid; gap: 2px; align-content: start; min-width: 0; }
+.kpi:first-child { border-left: 0; }
+@media (max-width: 520px) { .kpi { border-left: 0; border-top: 1px solid var(--line); } .kpi:first-child { border-top: 0; } .kpis { grid-template-columns: 1fr 1fr; } .kpi:nth-child(2) { border-top: 0; } .kpi:nth-child(even) { border-left: 1px solid var(--line); } }
+.kpi .k { font-size: 12px; color: var(--muted); }
+.kpi .v { font-family: var(--font-mono); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kpi .s { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.pos { color: var(--up); } .neg { color: var(--down); }
+
+/* ---- Graphique ---- */
+.chart-wrap { position: relative; height: 340px; }
+@media (max-width: 600px) { .chart-wrap { height: 270px; } }
+#chart { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.note { font-size: 12px; color: var(--muted); }
+.livebar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin: -2px 0 10px; font-size: 12.5px; color: var(--muted); }
+.livebar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.livebar .dot.ok { background: var(--up); } .livebar .dot.bad { background: var(--down); } .livebar .dot.wait { background: var(--warn); }
+.livebar b { font-family: var(--font-mono); font-weight: 500; color: var(--fg); }
+
+/* ---- Décision ---- */
+.two { display: grid; gap: 16px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 1200px) { .two { grid-template-columns: 1.1fr .9fr; } }
+.scorehead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.scoreval { font-family: var(--font-mono); font-size: 34px; font-weight: 500; line-height: 1; }
+.tag { font-family: var(--font-head); font-weight: 600; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--surface2); }
+.tag.buy { background: var(--up-soft); color: var(--up); } .tag.sell { background: var(--down-soft); color: var(--down); } .tag.hold { background: var(--accent-soft); color: var(--accent); }
+.gauge { position: relative; height: 12px; border-radius: 6px; background: var(--surface2); margin: 12px 0 8px; overflow: hidden; }
+.g-mid { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--muted); opacity: .6; }
+.g-fill { position: absolute; top: 0; bottom: 0; }
+.g-fill.up { background: var(--up); } .g-fill.down { background: var(--down); }
+.g-thr { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--fg); opacity: .55; }
+.dtext { font-size: 13.5px; margin-top: 4px; min-height: 40px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.meta b { font-family: var(--font-mono); color: var(--fg); font-weight: 500; }
+.factors { display: grid; gap: 9px; }
+.frow { display: grid; grid-template-columns: 118px 1fr 40px; gap: 10px; align-items: center; font-size: 12.5px; }
+.fbar { position: relative; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.fbar .g-mid { opacity: .5; }
+.frow .fv { font-family: var(--font-mono); text-align: right; color: var(--muted); }
+
+/* ---- Position ---- */
+.posgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.posgrid div { display: grid; gap: 1px; min-width: 0; }
+.posgrid span { font-size: 12px; color: var(--muted); }
+.posgrid b { font-family: var(--font-mono); font-weight: 500; font-size: 14px; overflow-wrap: anywhere; }
+.empty { color: var(--muted); padding: 6px 0; }
+#curve { width: 100%; height: 90px; display: block; margin-top: 12px; }
+
+/* ---- Tableaux & journal ---- */
+.tscroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th { text-align: left; font-family: var(--font-head); font-weight: 600; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--grid); white-space: nowrap; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+td.txt { font-family: var(--font-body); }
+.side { font-family: var(--font-head); font-weight: 600; letter-spacing: .05em; }
+.log { max-height: 280px; overflow-y: auto; display: grid; gap: 0; font-size: 12.5px; }
+.log div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--grid); }
+.log time { font-family: var(--font-mono); color: var(--muted); }
+.log .trade { color: var(--accent); } .log .win { color: var(--up); } .log .loss { color: var(--down); }
+.log .warn { color: var(--warn); } .log .danger { color: var(--down); font-weight: 500; }
+.log span { overflow-wrap: anywhere; min-width: 0; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 6px; font-size: 13px; z-index: 50; max-width: calc(100% - 32px);
+}
+.toast[hidden] { display: none; }
+.closeNow{margin-left:auto;background:#b3261e;color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}.closeNow:disabled{opacity:.5;cursor:default}
+.riskScale{display:flex;justify-content:space-between;font-size:11px;opacity:.7;margin-top:2px}
+</style>
+
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">AT</div>
+      <div><h1>Autotrader Crypto</h1><p>Bot de trading automatique pour Binance Spot et Futures</p></div>
+    </div>
+    <div class="top-actions">
+      <span class="pill" id="status"><i></i><span id="statusTxt">Arrêté</span></span>
+      <button class="btn go" id="go" type="button">Démarrer le bot</button>
+    </div>
+  </header>
+
+  <div class="banner" id="banner"></div>
+  <div class="banner test" id="bannerArtifact" hidden>Cette version hébergée fonctionne en simulation uniquement : le navigateur bloque l'accès à Binance depuis cette page. Pour le Testnet et le mode Réel, ouvre le fichier autotrader.html directement depuis ton ordinateur.</div>
+
+  <main class="layout">
+    <aside class="config" id="config" aria-label="Réglages du bot">
+      <section class="grp">
+        <h2>Mode</h2>
+        <div class="seg" id="segMode" role="group" aria-label="Mode">
+          <button type="button" data-v="sim">Simulation</button>
+          <button type="button" data-v="paper">Papier</button>
+          <button type="button" data-v="testnet">Testnet</button>
+          <button type="button" data-v="live">Réel</button>
+        </div>
+        <p class="hint" id="modeHint"></p>
+        <div id="apiBox" hidden>
+          <div class="field"><label for="apiKey">Clé API</label><input id="apiKey" type="text" autocomplete="off" spellcheck="false"></div>
+          <div class="field" style="margin-top:8px"><label for="apiSecret">Clé secrète</label><input id="apiSecret" type="password" autocomplete="off" spellcheck="false"></div>
+          <p class="hint" style="margin-top:8px">Les clés ne partent que vers Binance. Par défaut elles ne sont pas enregistrées. Active uniquement « Trading », jamais « Retrait ».</p>
+          <label class="check" style="margin-top:8px"><input type="checkbox" id="rememberKeys"><span>Mémoriser les clés sur cet ordinateur (elles resteront après un rafraîchissement). À éviter sur un ordinateur partagé.</span></label>
+          <button class="btn" id="testConn" type="button" style="margin-top:8px">Tester la connexion</button>
+          <div class="conn-out" id="connOut" style="margin-top:8px"></div>
+          <label class="check" id="liveAckRow" style="margin-top:10px"><input type="checkbox" id="liveAck"><span>Je comprends que ce bot trade avec mon argent réel et que je peux perdre tout le capital engagé.</span></label>
+        </div>
+      </section>
+
+      <section class="grp">
+        <h2>Marché</h2>
+        <div class="seg" id="segMarket" role="group" aria-label="Marché">
+          <button type="button" data-v="spot">Spot</button>
+          <button type="button" data-v="futures">Futures</button>
+        </div>
+        <div id="levBox">
+          <div class="slider"><label class="lbl" for="leverage">Levier</label><input id="leverage" type="range" min="1" max="50" step="1"><b id="levVal">×5</b></div>
+          <p class="hint" id="levHint" style="margin-top:6px"></p>
+        </div>
+        <p class="hint" id="spotHint" hidden>Spot : le bot achète puis revend. Il ne peut pas parier à la baisse.</p>
+      </section>
+
+      <section class="grp">
+        <h2>Paire et budget</h2>
+        <div class="row2">
+          <div class="field"><label for="symbol">Paire</label>
+            <select id="symbol">
+              <option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option>
+            </select></div>
+          <div class="field"><label for="budget">Budget (USDT)</label><input id="budget" type="number" min="5" step="1"></div>
+        </div>
+        <div class="chips" id="budgetChips"><button type="button" data-b="5">5</button><button type="button" data-b="10">10</button><button type="button" data-b="100">100</button><button type="button" data-b="500">500</button><button type="button" data-b="1000">1 000</button><button type="button" data-b="5000">5 000</button></div>
+        <p class="hint">Minimum 5 USDT. Le bot n'utilise jamais plus que ce budget. Binance impose un ordre minimum (souvent 5 USDT, plus sur BTC en Futures) : le bot te dit au démarrage si ton budget est trop juste.</p>
+      </section>
+
+      <section class="grp">
+        <h2>Timeframe de trading</h2>
+        <div class="chips" id="tfChips"></div>
+        <p class="hint" id="tfHint"></p>
+      </section>
+
+      <section class="grp">
+        <h2>Style de trading</h2>
+        <div class="seg" id="segProfile" role="group" aria-label="Profil">
+          <button type="button" data-v="prudent">Prudent</button>
+          <button type="button" data-v="equilibre">Équilibré</button>
+          <button type="button" data-v="agressif">Agressif</button>
+        </div>
+        <div class="slider" style="margin-top:12px"><label class="lbl" for="riskLevel">Risque</label><input id="riskLevel" type="range" min="0" max="200" step="5"><b id="riskVal">100 %</b></div>
+        <div class="riskScale"><span>0 : positions minuscules</span><span>100 : équilibré</span><span>200 : tout ou rien</span></div>
+        <p class="hint" id="riskHint"></p>
+        <p class="hint" id="profHint"></p>
+        <details class="adv">
+          <summary>Réglages avancés</summary>
+          <div class="advgrid">
+            <div class="row2">
+              <div class="field"><label for="thr">Score minimum</label><input id="thr" type="number" step="1"></div>
+              <div class="field"><label for="alloc">Part du budget engagée (%)</label><input id="alloc" type="number" step="5"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="riskPct">Perte max par trade (%)</label><input id="riskPct" type="number" step="0.5"></div>
+              <div class="field"><label for="slAtr">Stop (× ATR)</label><input id="slAtr" type="number" step="0.1"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="rr">Objectif (× risque)</label><input id="rr" type="number" step="0.1"></div>
+              <div class="field"><label for="trailAtr">Trailing (× ATR)</label><input id="trailAtr" type="number" step="0.1"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="maxBars">Durée max (bougies)</label><input id="maxBars" type="number" step="1"></div>
+              <div class="field"><label for="maxDailyLoss">Perte max / jour (%)</label><input id="maxDailyLoss" type="number" step="0.5"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="cooldown">Repos après sortie (bougies)</label><input id="cooldown" type="number" step="1" min="0"></div>
+              <div class="field"><label for="stepK">Montée du stop (part du gain, 0 = off)</label><input id="stepK" type="number" step="0.05" min="0" max="0.95"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="maxDD">Arrêt d'urgence (%)</label><input id="maxDD" type="number" step="1"></div>
+              <div class="field"><label for="lockMult">Verrouillage à (× frais)</label><input id="lockMult" type="number" step="0.1"></div>
+            </div>
+            <label class="check"><input type="checkbox" id="lockFees"><span>Dès que le gain couvre les frais, le stop passe au point mort : un trade en gain ne finit plus en perte</span></label>
+            <p class="hint">« Verrouillage à » : gain minimum, en multiple des frais, avant de passer au point mort. À 3×, le stop se pose dès que le gain vaut 3 fois les frais. Sous 2×, les petits retours du prix te sortent trop souvent : en simulation, 1,5× fait perdre de l'argent.</p>
+            <label class="check"><input type="checkbox" id="entryFilter"><span>Filtre d'entrée : refuser une entrée contre la dernière bougie, contre une mèche de rejet ou sans direction (ADX faible)</span></label>
+            <label class="check"><input type="checkbox" id="structStop"><span>Stop au-delà du dernier creux ou sommet (hors du bruit du marché)</span></label>
+            <label class="check"><input type="checkbox" id="trailing"><span>Stop suiveur (trailing) après +1R</span></label>
+            <label class="check" id="shortRow"><input type="checkbox" id="allowShort"><span>Autoriser les ventes à découvert (Futures)</span></label>
+            <label class="check"><input type="checkbox" id="htfGate"><span>Exiger l'accord du timeframe supérieur (×5)</span></label>
+            <label class="check"><input type="checkbox" id="confirmCandle"><span>Confirmer le signal sur 2 bougies</span></label>
+            <label class="check"><input type="checkbox" id="costFilter"><span>Ignorer les trades dont l'objectif ne couvre pas les frais</span></label>
+            <label class="check"><input type="checkbox" id="closeOnStop"><span>Fermer la position quand j'arrête le bot</span></label>
+            <p class="hint" id="costHint"></p>
+          </div>
+        </details>
+      </section>
+
+      <section class="grp" id="speedBox">
+        <h2>Vitesse de la simulation</h2>
+        <div class="field"><select id="speed">
+          <option value="1">×1 (temps réel)</option><option value="5">×5</option><option value="20">×20</option><option value="60">×60</option><option value="200">×200</option>
+        </select></div>
+        <p class="hint" id="speedHint"></p>
+      </section>
+    </aside>
+
+    <section class="dash" aria-label="Tableau de bord">
+      <div class="card kpis" id="kpis">
+        <div class="kpi"><span class="k">Capital</span><b class="v" id="kCap">—</b><span class="s" id="kCapS"></span></div>
+        <div class="kpi"><span class="k">Gain total</span><b class="v" id="kPnl">—</b><span class="s" id="kPnlS"></span></div>
+        <div class="kpi"><span class="k">Aujourd'hui</span><b class="v" id="kDay">—</b><span class="s" id="kDayS"></span></div>
+        <div class="kpi"><span class="k">Trades gagnants</span><b class="v" id="kWin">—</b><span class="s" id="kWinS"></span></div>
+        <div class="kpi"><span class="k">Facteur de profit</span><b class="v" id="kPF">—</b><span class="s" id="kPFS"></span></div>
+        <div class="kpi"><span class="k">Baisse maximale</span><b class="v" id="kDD">—</b><span class="s" id="kDDS"></span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2 id="chartTitle">BTCUSDT</h2><span class="mono" id="chartPrice"></span></div>
+        <div class="livebar" id="liveBar" hidden aria-live="off"><span class="dot" id="liveDot"></span><span id="liveFeed"></span><span id="liveNext"></span><span id="liveCandles"></span></div>
+        <div class="chart-wrap"><canvas id="chart" role="img" aria-label="Graphique en bougies avec moyennes mobiles et trades du bot"></canvas></div>
+        <p class="note" id="chartNote" style="margin-top:8px"></p>
+      </div>
+
+      <div class="two">
+        <div class="card">
+          <div class="card-h"><h2>Décision du bot</h2><span class="note" id="dRegime"></span></div>
+          <div class="scorehead"><span class="scoreval" id="scoreVal">0</span><span class="tag" id="scoreTag">En attente</span></div>
+          <div class="gauge" id="gauge" aria-hidden="true"><span class="g-fill" id="gFill"></span><span class="g-mid"></span><span class="g-thr" id="gThrL"></span><span class="g-thr" id="gThrR"></span></div>
+          <p class="dtext" id="dText"></p>
+          <div class="meta" id="dMeta"></div>
+          <div class="factors" id="factors" style="margin-top:14px"></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h2>Position</h2><span class="note" id="posNote"></span><button type="button" id="closeNow" class="closeNow" hidden>Fermer maintenant</button></div>
+          <div id="posBox"></div>
+          <canvas id="curve" aria-label="Courbe du capital"></canvas>
+          <p class="note">Courbe du capital (ligne pointillée : budget de départ)</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>Trades terminés</h2><span class="note" id="tradesNote"></span></div>
+        <div class="tscroll"><table>
+          <thead><tr><th>Sortie</th><th>Sens</th><th>Entrée</th><th>Sortie</th><th>Résultat</th><th>R</th><th>Motif</th></tr></thead>
+          <tbody id="tradesBody"></tbody>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h2>Journal du bot</h2></div>
+        <div class="log" id="log" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+'use strict';
+/* ============================================================
+   MOTEUR : aucune dépendance au DOM. Indicateurs, stratégie,
+   gestion du risque, marché simulé, courtiers (simulation / Binance).
+   ============================================================ */
+
+const TFS = ['1s', '5s', '15s', '30s', '1m', '3m', '5m', '15m', '30m', '1h'];
+const TF_SEC = { '1s': 1, '5s': 5, '15s': 15, '30s': 30, '1m': 60, '3m': 180, '5m': 300, '15m': 900, '30m': 1800, '1h': 3600 };
+const MIN_CANDLES = 60;
+const HTF_N = 5;
+const MIN_NOTIONAL = 5;
+
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const sgn = (x) => (x > 0 ? 1 : x < 0 ? -1 : 0);
+
+const PROFILES = {
+  // alloc = part du budget engagée comme marge (jusqu'à 100 % = tout le budget)
+  // riskPct = perte maximale acceptée si le stop est touché, en % du capital (plafonne la taille)
+  prudent:   { thr: 55, alloc: 30,  riskPct: 3,  slAtr: 2.0, rr: 2.0, trailAtr: 2.0, maxBars: 60 },
+  equilibre: { thr: 42, alloc: 60,  riskPct: 8,  slAtr: 1.6, rr: 1.8, trailAtr: 1.6, maxBars: 45 },
+  agressif:  { thr: 32, alloc: 100, riskPct: 25, slAtr: 1.3, rr: 1.5, trailAtr: 1.3, maxBars: 30 },
+};
+
+/* Jauge de risque 0 à 200 % : elle règle surtout la TAILLE des positions (part du budget engagée et perte maximale par trade).
+   La qualité des signaux reste raisonnable à tous les niveaux : seuil d'entrée jamais sous 38, stop jamais trop serré,
+   objectif d'au moins 1,8 fois le risque. Repères : 50 = Prudent, 100 = Équilibré, 150 = Agressif. */
+const RISK_ANCHORS = [
+  [0,   { thr: 55, alloc: 5,   riskPct: 0.5, slAtr: 2.0, rr: 2.0, trailAtr: 2.0, maxBars: 60 }],
+  [50,  { thr: 48, alloc: 30,  riskPct: 3,   slAtr: 2.0, rr: 2.0, trailAtr: 2.0, maxBars: 55 }],
+  [100, { thr: 42, alloc: 60,  riskPct: 8,   slAtr: 1.7, rr: 1.9, trailAtr: 1.8, maxBars: 45 }],
+  [150, { thr: 40, alloc: 100, riskPct: 25,  slAtr: 1.6, rr: 1.8, trailAtr: 1.7, maxBars: 40 }],
+  [200, { thr: 38, alloc: 100, riskPct: 50,  slAtr: 1.6, rr: 1.8, trailAtr: 1.6, maxBars: 40 }],
+];
+function riskParams(level) {
+  const r = Math.max(0, Math.min(200, +level || 0));
+  let i = 0; while (i < RISK_ANCHORS.length - 2 && r > RISK_ANCHORS[i + 1][0]) i++;
+  const [r0, a] = RISK_ANCHORS[i], [r1, b] = RISK_ANCHORS[i + 1], k = (r - r0) / (r1 - r0), out = {};
+  for (const key of Object.keys(a)) out[key] = a[key] + (b[key] - a[key]) * k;
+  out.thr = Math.round(out.thr); out.alloc = Math.round(out.alloc); out.riskPct = +out.riskPct.toFixed(1);
+  out.slAtr = +out.slAtr.toFixed(2); out.rr = +out.rr.toFixed(2); out.trailAtr = +out.trailAtr.toFixed(2); out.maxBars = Math.round(out.maxBars);
+  return out;
+}
+
+const DEFAULTS = {
+  mode: 'sim', market: 'futures', leverage: 5, symbol: 'BTCUSDT', budget: 1000, tf: '5m',
+  profile: 'equilibre', ...PROFILES.equilibre,
+  trailing: true, maxDailyLoss: 4, maxDD: 20, allowShort: true, htfGate: true,
+  costFilter: true, confirmCandle: true, lockFees: true, lockMult: 3, entryFilter: true, structStop: true, cooldown: 2, stepK: 0.5, speed: 20, slip: 0.0002,
+  apiKey: '', apiSecret: '',
+};
+
+function feeRate(market) { return market === 'futures' ? 0.0005 : 0.001; }
+
+/* ---------------- Indicateurs ---------------- */
+
+function emaSeries(a, n) {
+  const k = 2 / (n + 1);
+  const o = new Array(a.length);
+  let e = 0;
+  for (let i = 0; i < a.length; i++) {
+    e = i < n ? (e * i + a[i]) / (i + 1) : a[i] * k + e * (1 - k);
+    o[i] = e;
+  }
+  return o;
+}
+
+function macdHist(c) {
+  const e12 = emaSeries(c, 12), e26 = emaSeries(c, 26);
+  const line = c.map((_, i) => e12[i] - e26[i]);
+  const sig = emaSeries(line, 9);
+  return line.map((v, i) => v - sig[i]);
+}
+
+function rsiLast(c, n = 14) {
+  if (c.length < n + 1) return 50;
+  let g = 0, l = 0;
+  for (let i = 1; i <= n; i++) { const d = c[i] - c[i - 1]; if (d >= 0) g += d; else l -= d; }
+  g /= n; l /= n;
+  for (let i = n + 1; i < c.length; i++) {
+    const d = c[i] - c[i - 1];
+    g = (g * (n - 1) + (d > 0 ? d : 0)) / n;
+    l = (l * (n - 1) + (d < 0 ? -d : 0)) / n;
+  }
+  if (l === 0) return g === 0 ? 50 : 100;
+  return 100 - 100 / (1 + g / l);
+}
+
+function atrLast(cs, n = 14) {
+  if (cs.length < 2) return 0;
+  let a = 0, cnt = 0;
+  for (let i = 1; i < cs.length; i++) {
+    const p = cs[i - 1].c;
+    const tr = Math.max(cs[i].h - cs[i].l, Math.abs(cs[i].h - p), Math.abs(cs[i].l - p));
+    if (cnt < n) { a = (a * cnt + tr) / (cnt + 1); cnt++; } else a = (a * (n - 1) + tr) / n;
+  }
+  return a;
+}
+
+function adxLast(cs, n = 14) {
+  if (cs.length < n * 2 + 2) return { adx: 20, pdi: 20, mdi: 20 };
+  let sTR = 0, sP = 0, sM = 0, adx = 0, dxCount = 0, pdi = 0, mdi = 0;
+  for (let i = 1; i < cs.length; i++) {
+    const up = cs[i].h - cs[i - 1].h, dn = cs[i - 1].l - cs[i].l;
+    const pdm = up > dn && up > 0 ? up : 0;
+    const mdm = dn > up && dn > 0 ? dn : 0;
+    const tr = Math.max(cs[i].h - cs[i].l, Math.abs(cs[i].h - cs[i - 1].c), Math.abs(cs[i].l - cs[i - 1].c));
+    if (i <= n) { sTR += tr; sP += pdm; sM += mdm; if (i < n) continue; }
+    else { sTR = sTR - sTR / n + tr; sP = sP - sP / n + pdm; sM = sM - sM / n + mdm; }
+    pdi = sTR ? (100 * sP) / sTR : 0;
+    mdi = sTR ? (100 * sM) / sTR : 0;
+    const dx = pdi + mdi ? (100 * Math.abs(pdi - mdi)) / (pdi + mdi) : 0;
+    dxCount++;
+    adx = dxCount <= n ? (adx * (dxCount - 1) + dx) / dxCount : (adx * (n - 1) + dx) / n;
+  }
+  return { adx, pdi, mdi };
+}
+
+function bbAt(c, end, n = 20, k = 2) {
+  const s = c.slice(Math.max(0, end - n), end);
+  const m = s.reduce((a, b) => a + b, 0) / s.length;
+  const sd = Math.sqrt(s.reduce((a, b) => a + (b - m) ** 2, 0) / s.length);
+  return { mid: m, up: m + k * sd, lo: m - k * sd };
+}
+
+function aggregate(cs, N) {
+  const out = [];
+  for (let end = cs.length; end - N >= 0; end -= N) {
+    const g = cs.slice(end - N, end);
+    out.push({
+      t: g[0].t, o: g[0].o, c: g[N - 1].c,
+      h: Math.max(...g.map((x) => x.h)), l: Math.min(...g.map((x) => x.l)),
+      v: g.reduce((a, x) => a + x.v, 0),
+    });
+  }
+  return out.reverse();
+}
+
+/* ---------------- Analyse : score -100 .. +100 ---------------- */
+
+const WEIGHTS = { trend: 30, momentum: 25, rsi: 15, boll: 15, volume: 10, htf: 25 };
+
+function analyze(cs) {
+  const n = cs.length;
+  if (n < MIN_CANDLES) return { ready: false, n };
+  const w = cs.slice(-320);
+  const c = w.map((x) => x.c);
+  const last = w[w.length - 1];
+  const price = last.c;
+  const L = c.length;
+
+  const e9 = emaSeries(c, 9)[L - 1], e21 = emaSeries(c, 21)[L - 1], e50 = emaSeries(c, 50)[L - 1];
+  const rsi = rsiLast(c, 14);
+  const hist = macdHist(c);
+  const h = hist[L - 1], hp = hist[L - 2];
+  const atr = atrLast(w, 14);
+  const { adx, pdi, mdi } = adxLast(w, 14);
+  const bb = bbAt(c, L), bbp = bbAt(c, L - 3);
+  const bw = (bb.up - bb.lo) / bb.mid, bwp = (bbp.up - bbp.lo) / bbp.mid;
+  const pb = bb.up > bb.lo ? (price - bb.lo) / (bb.up - bb.lo) : 0.5;
+  const expanding = bw > bwp * 1.02;
+  const vols = w.slice(-21, -1).map((x) => x.v);
+  const vavg = vols.reduce((a, b) => a + b, 0) / Math.max(1, vols.length);
+  const vr = vavg > 0 ? last.v / vavg : 1;
+
+  const tf = clamp((adx - 16) / 12, 0, 1);
+  const regime = tf > 0.66 ? 'tendance' : tf < 0.25 ? 'range' : 'mixte';
+
+  const trend = clamp(((e9 > e21 ? 1 : -1) * 0.5 + (e21 > e50 ? 1 : -1) * 0.3 + (price > e21 ? 1 : -1) * 0.2) * clamp(0.45 + adx / 45, 0.45, 1.1), -1, 1);
+  const mag = clamp(Math.abs(h) / (atr * 0.12 + 1e-12), 0, 1);
+  const momentum = clamp(((h > 0 ? 0.6 : -0.6) + (h > hp ? 0.4 : -0.4)) * (0.4 + 0.6 * mag), -1, 1);
+
+  let rsiTrend = clamp((rsi - 50) / 22, -1, 1);
+  if (rsi > 78) rsiTrend = 0.1; else if (rsi < 22) rsiTrend = -0.1;
+  const rsiMean = rsi < 32 ? clamp((32 - rsi) / 12, 0, 1) : rsi > 68 ? -clamp((rsi - 68) / 12, 0, 1) : 0;
+  const rsiPart = rsiMean * (1 - tf) + rsiTrend * tf;
+
+  let bTrend = (pb - 0.5) * 0.8;
+  if (expanding) { if (pb > 0.8) bTrend = 0.7; else if (pb < 0.2) bTrend = -0.7; }
+  const bMean = pb < 0.1 ? 1 : pb > 0.9 ? -1 : (0.5 - pb) * 0.5;
+  const boll = bMean * (1 - tf) + bTrend * tf;
+
+  const volume = vavg > 0 ? sgn(last.c - last.o) * clamp((vr - 1) / 1.5, 0, 1) : 0;
+
+  const H = aggregate(w, HTF_N);
+  let htf = 0, htfReady = false;
+  if (H.length >= 30) {
+    const hc = H.map((x) => x.c);
+    const h9 = emaSeries(hc, 9), h21 = emaSeries(hc, 21);
+    const a9 = h9[h9.length - 1], a21 = h21[h21.length - 1];
+    htf = (a9 > a21 ? 0.6 : -0.6) + (hc[hc.length - 1] > a21 ? 0.4 : -0.4);
+    htfReady = true;
+  }
+
+  const parts = { trend, momentum, rsi: rsiPart, boll, volume, htf };
+  let num = 0, den = 0;
+  for (const k of Object.keys(parts)) {
+    if (k === 'htf' && !htfReady) continue;
+    num += WEIGHTS[k] * parts[k]; den += WEIGHTS[k];
+  }
+  const score = Math.round((100 * num) / den);
+  return {
+    ready: true, n, price, score, parts, regime, tfFactor: tf, adx, pdi, mdi, rsi, atr,
+    atrPct: (atr / price) * 100, e9, e21, e50, hist: h, pb, vr, htfReady, bwExpanding: expanding,
+    range: last.h - last.l,
+    ext: atr > 0 ? (price - e21) / atr : 0,                              // distance du prix à l'EMA 21, en ATR
+    body: atr > 0 ? (last.c - last.o) / atr : 0,                         // corps de la dernière bougie, en ATR (signé)
+    upWick: last.h - Math.max(last.o, last.c), dnWick: Math.min(last.o, last.c) - last.l,
+    swingLow: Math.min(...w.slice(-8).map((x) => x.l)), swingHigh: Math.max(...w.slice(-8).map((x) => x.h)),
+  };
+}
+
+function explain(a, side) {
+  const p = a.parts, r = [];
+  if (p.trend * side > 0.4) r.push(side > 0 ? 'tendance haussière (EMA 9>21>50)' : 'tendance baissière (EMA 9<21<50)');
+  if (p.momentum * side > 0.4) r.push('momentum MACD ' + (side > 0 ? 'positif' : 'négatif'));
+  if (p.rsi * side > 0.3) r.push('RSI ' + a.rsi.toFixed(0));
+  if (p.boll * side > 0.3) r.push(side > 0 ? 'prix bas dans les bandes de Bollinger' : 'prix haut dans les bandes de Bollinger');
+  if (p.volume * side > 0.3) r.push('volume ×' + a.vr.toFixed(1));
+  if (a.htfReady && p.htf * side > 0.4) r.push('timeframe supérieur aligné');
+  r.push('régime ' + a.regime + ' (ADX ' + a.adx.toFixed(0) + ')');
+  return r.join(', ');
+}
+
+/* ---------------- Bougies ---------------- */
+
+class CandleBuilder {
+  constructor(tfSec) { this.ms = tfSec * 1000; this.cur = null; this.candles = []; }
+  seed(cs) { this.candles = cs.slice(-600); this.cur = null; }
+  push(t, p, v) {
+    const b = Math.floor(t / this.ms) * this.ms;
+    const out = [];
+    if (!this.cur) { this.cur = { t: b, o: p, h: p, l: p, c: p, v: v || 0 }; return out; }
+    if (b > this.cur.t) {
+      const prev = this.cur;
+      out.push(prev); this.candles.push(prev);
+      const gap = Math.floor((b - prev.t) / this.ms) - 1;
+      for (let g = 1; g <= Math.min(gap, 120); g++) {
+        const f = { t: prev.t + g * this.ms, o: prev.c, h: prev.c, l: prev.c, c: prev.c, v: 0 };
+        out.push(f); this.candles.push(f);
+      }
+      this.cur = { t: b, o: p, h: p, l: p, c: p, v: v || 0 };
+      if (this.candles.length > 700) this.candles.splice(0, this.candles.length - 600);
+    } else {
+      const c = this.cur;
+      if (p > c.h) c.h = p; if (p < c.l) c.l = p; c.c = p; c.v += v || 0;
+    }
+    return out;
+  }
+}
+
+/* ---------------- Marché simulé ---------------- */
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const SIM_BASE = {
+  BTCUSDT: [68000, 0.00012], ETHUSDT: [3400, 0.00016], SOLUSDT: [170, 0.00022],
+  BNBUSDT: [620, 0.00014], XRPUSDT: [0.62, 0.0002], DOGEUSDT: [0.16, 0.00024],
+};
+
+class SimMarket {
+  constructor(symbol, t0, seed) {
+    const [p, s] = SIM_BASE[symbol] || [100, 0.00018];
+    this.p = p; this.sigma = s; this.t = t0; this.rng = mulberry32(seed || 12345);
+    this.lv = 0; this.anchor = p; this.mu = 0; this.vm = 1; this.left = 0; this.regime = 'range';
+    this.nextRegime();
+  }
+  gauss() {
+    let u = 0, v = 0;
+    while (!u) u = this.rng();
+    while (!v) v = this.rng();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  nextRegime() {
+    const r = this.rng(), sg = this.sigma;
+    this.left = (8 + this.rng() * 32) * 60;
+    if (r < 0.22) { this.regime = 'hausse'; this.mu = (0.03 + this.rng() * 0.06) * sg; this.vm = 1.1; }
+    else if (r < 0.44) { this.regime = 'baisse'; this.mu = -(0.03 + this.rng() * 0.06) * sg; this.vm = 1.1; }
+    else if (r < 0.84) { this.regime = 'range'; this.mu = 0; this.vm = 0.8; this.anchor = this.p; }
+    else { this.regime = 'volatil'; this.mu = (this.rng() - 0.5) * 0.06 * sg; this.vm = 2.0; }
+  }
+  step(dt) {
+    this.left -= dt;
+    if (this.left <= 0) this.nextRegime();
+    this.lv += -0.02 * this.lv * dt + 0.05 * Math.sqrt(dt) * this.gauss();
+    const vol = Math.exp(clamp(this.lv, -1, 1.2)) * this.vm;
+    const z = this.gauss();
+    let ret = this.mu * dt + this.sigma * vol * Math.sqrt(dt) * z;
+    if (this.regime === 'range') ret += -0.0008 * Math.log(this.p / this.anchor) * dt;
+    this.p *= Math.exp(ret);
+    this.t += dt * 1000;
+    const v = (0.02 + 0.08 * this.rng()) * (1 + Math.abs(z)) * (this.regime === 'volatil' ? 2 : 1) * (1 + vol * 0.3);
+    return { t: this.t, p: this.p, v };
+  }
+}
+
+function simTickStep(tfSec) { return clamp(tfSec / 4, 0.25, 1); }
+
+/* ---------------- Courtier simulation ---------------- */
+
+class SimBroker {
+  constructor(cfg) { this.cfg = cfg; this.name = 'sim'; }
+  async init() {}
+  async open(side, qty, ref) {
+    const px = side > 0 ? ref * (1 + this.cfg.slip) : ref * (1 - this.cfg.slip);
+    return { price: px, qty, fee: qty * px * feeRate(this.cfg.market) };
+  }
+  async protect() {}
+  async updateStop() {}
+  async close(pos, ref, reason) {
+    if (reason === 'liquidation') return { price: ref, fee: 0 };
+    const px = pos.dir > 0 ? ref * (1 - this.cfg.slip) : ref * (1 + this.cfg.slip);
+    return { price: px, fee: pos.qty * px * feeRate(this.cfg.market) };
+  }
+  async positionAmt() { return null; }
+  async balance() { return null; }
+}
+
+/* ---------------- Robot ---------------- */
+
+class Bot {
+  constructor(cfg, broker, hooks) {
+    this.cfg = cfg; this.broker = broker; this.hooks = hooks || {};
+    this.fut = cfg.market === 'futures';
+    this.cash = cfg.budget; this.startBudget = cfg.budget;
+    this.pos = null; this.trades = []; this.curve = []; this.markers = [];
+    this.peak = cfg.budget; this.maxDD = 0;
+    this.dayKey = null; this.dayStartEquity = cfg.budget;
+    this.status = 'warmup'; this.busy = false; this.cooldown = 0;
+    this.score = 0; this.prevScore = 0; this.scoreHist = []; this.a = null;
+    this.lastPrice = null; this.lastT = null; this.retryAt = 0; this.skips = 0;
+    this.decision = { kind: 'wait', text: 'Échauffement des indicateurs…' };
+  }
+
+  log(level, msg) { if (this.hooks.log) this.hooks.log(level, msg, this.lastT); }
+
+  equity(p) {
+    const q = this.pos;
+    if (!q) return this.cash;
+    return this.cash + q.locked + q.dir * (p - q.entry) * q.qty;
+  }
+
+  unrealized(p) { return this.pos ? this.pos.dir * (p - this.pos.entry) * this.pos.qty : 0; }
+
+  stats() {
+    const t = this.trades;
+    const wins = t.filter((x) => x.pnl > 0), losses = t.filter((x) => x.pnl <= 0);
+    const gw = wins.reduce((a, x) => a + x.pnl, 0), gl = -losses.reduce((a, x) => a + x.pnl, 0);
+    return {
+      n: t.length, wins: wins.length,
+      winRate: t.length ? (wins.length / t.length) * 100 : 0,
+      profitFactor: gl > 0 ? gw / gl : gw > 0 ? Infinity : 0,
+      avgR: t.length ? t.reduce((a, x) => a + x.r, 0) / t.length : 0,
+      pnl: t.reduce((a, x) => a + x.pnl, 0),
+    };
+  }
+
+  async onTick(t, p) {
+    this.lastPrice = p; this.lastT = t;
+    if (this.status === 'stopped' || this.status === 'halted') return;
+    const dk = Math.floor(t / 864e5);
+    if (this.dayKey !== dk) {
+      this.dayKey = dk; this.dayStartEquity = this.equity(p); this.dayPnl = 0;
+      if (this.status === 'paused_day') { this.status = 'running'; this.log('info', 'Nouveau jour : le bot reprend.'); }
+    }
+    const eq = this.equity(p);
+    if (eq > this.peak) this.peak = eq;
+    const dd = ((this.peak - eq) / this.peak) * 100;
+    if (dd > this.maxDD) this.maxDD = dd;
+
+    if (this.pos && !this.busy && Date.now() >= this.retryAt) {
+      const q = this.pos;
+      if (q.dir > 0 ? p > q.extreme : p < q.extreme) q.extreme = p;
+      this.ratchet();
+      this.pushStop();
+      let reason = null, ref = p;
+      if (q.liq && ((q.dir > 0 && p <= q.liq) || (q.dir < 0 && p >= q.liq))) { reason = 'liquidation'; ref = q.liq; }
+      else if ((q.dir > 0 && p <= q.sl) || (q.dir < 0 && p >= q.sl)) { reason = q.kind === 'trail' ? 'trailing stop' : q.kind === 'lock' ? 'gain sécurisé' : (q.kind === 'be' || q.kind === 'fees') ? 'point mort (frais couverts)' : 'stop-loss'; }
+      else if ((q.dir > 0 && p >= q.tp) || (q.dir < 0 && p <= q.tp)) { reason = 'take-profit'; ref = q.tp; }
+      if (reason) { await this.closePosition(ref, reason, t); return; }
+    }
+
+    if (!this.busy) {
+      if (dd >= this.cfg.maxDD) { await this.halt(`Arrêt d'urgence : perte de ${dd.toFixed(1)} % depuis le plus haut.`); return; }
+      if (this.status !== 'paused_day') {
+        // Perte du jour = trades déjà clôturés aujourd'hui. Un trade en cours garde son stop et n'est pas fermé pour cette raison.
+        const dayLoss = (-(this.dayPnl || 0) / this.dayStartEquity) * 100;
+        if (dayLoss >= this.cfg.maxDailyLoss) {
+          this.status = 'paused_day';
+          this.log('warn', `Limite de perte journalière atteinte (${dayLoss.toFixed(1)} % de pertes réalisées). Plus de nouveaux trades aujourd'hui${this.pos ? ' ; le trade en cours continue avec son stop' : ''}.`);
+        }
+      }
+    }
+  }
+
+  async halt(msg) {
+    this.log('danger', msg);
+    if (this.pos) await this.closePosition(this.lastPrice, 'arrêt d\'urgence', this.lastT);
+    this.status = 'halted';
+    this.decision = { kind: 'halt', text: msg };
+  }
+
+  async stop(closePos) {
+    if (this.pos && closePos) await this.closePosition(this.lastPrice, 'arrêt manuel', this.lastT);
+    this.status = 'stopped';
+    this.decision = { kind: 'wait', text: 'Bot arrêté.' };
+  }
+
+  async onCandle(candles) {
+    if (this.status === 'stopped' || this.status === 'halted') return;
+    const a = analyze(candles);
+    this.a = a;
+    const last = candles[candles.length - 1];
+    this.curve.push({ t: last.t, e: this.equity(last.c) });
+    if (this.curve.length > 1500) this.curve.splice(0, this.curve.length - 1200);
+    if (!a.ready) { this.decision = { kind: 'wait', text: `Échauffement ${a.n}/${MIN_CANDLES} bougies` }; return; }
+    if (this.status === 'warmup') { this.status = 'running'; this.log('info', 'Indicateurs prêts, le bot analyse le marché.'); }
+    this.prevScore = this.score; this.score = a.score;
+    this.scoreHist.push(a.score); if (this.scoreHist.length > 80) this.scoreHist.shift();
+    if (this.busy) return;
+    if (this.pos) await this.manage(a, last);
+    else await this.consider(a, last);
+  }
+
+  async manage(a, c) {
+    const q = this.pos, cfg = this.cfg;
+    const price = this.lastPrice ?? c.c;
+    q.bars++;
+    if (q.bars >= cfg.maxBars) { await this.closePosition(price, 'durée maximale', this.lastT); return; }
+    const opp = q.dir > 0 ? -a.score : a.score;
+    if (opp >= cfg.thr * 0.7 && q.bars >= 2) { await this.closePosition(price, 'inversion du signal', this.lastT); return; }
+    this.decision = { kind: 'hold', text: `Position ${q.dir > 0 ? 'LONG' : 'SHORT'} ouverte depuis ${q.bars} bougie(s). Le bot gère la sortie.` };
+  }
+
+  /* Cliquet : le stop ne fait que se rapprocher du prix, à chaque prix reçu, en s'appuyant sur le meilleur niveau atteint.
+       +0,5R : point mort · +1R : on garde 35 % du gain max · +1,4R (proche de l'objectif) : on garde 60 % · puis stop suiveur (ATR). */
+  ratchet() {
+    const q = this.pos, cfg = this.cfg;
+    if (!q) return;
+    const R = q.risk, m = q.dir * (q.extreme - q.entry), mR = m / R;
+    let lock = null, kind = null;
+    // point mort réel : frais aller-retour + glissement estimé + petite marge
+    const buf = q.entry * (feeRate(cfg.market) * 2 + cfg.slip * 2 + 0.0002);
+    if (cfg.lockFees && m >= buf * cfg.lockMult) { lock = buf; kind = 'fees'; }
+    if (mR >= 0.5 && m >= buf * 1.2) { lock = Math.max(lock === null ? -Infinity : lock, buf); kind = 'be'; }
+    if (mR >= 1) { lock = Math.max(lock, 0.35 * m); kind = 'lock'; }
+    if (mR >= 1.4) { lock = Math.max(lock, 0.6 * m); kind = 'lock'; }
+    // montée progressive : dès que le prix avance, le stop remonte d'une fraction du gain (la perte possible diminue sans cesse)
+    if (cfg.stepK > 0 && m > 0) {
+      const st = -R + cfg.stepK * m;
+      if (lock === null || st > lock) { lock = st; kind = 'step'; }
+    }
+    let cand = lock === null ? null : q.entry + q.dir * lock;
+    if (cfg.trailing && mR >= 1) {
+      const atr = (this.a && this.a.atr) || R / cfg.slAtr;
+      const t = q.extreme - q.dir * atr * cfg.trailAtr;
+      if (cand === null || q.dir * (t - cand) > 0) { cand = t; kind = 'trail'; }
+    }
+    if (cand === null || q.dir * (cand - q.sl) <= 0) return;
+    if (q.dir * (cand - q.sl) < Math.max(q.entry * 0.0002, R * 0.05) && q.kind) return;
+    const first = !q.kind;
+    q.sl = cand; q.kind = kind; q.be = true;
+    if (first || kind !== q.lastLogged) { q.lastLogged = kind; this.log('info', kind === 'fees' ? `Gain supérieur aux frais : stop remonté à ${fmtP(cand)} (point mort). Ce trade ne peut plus finir en perte.` : kind === 'be' ? 'Position à +0,5R : stop au point mort.' : kind === 'step' ? `Stop remonté à ${fmtP(cand)} : la perte maximale n'est plus que ${(Math.max(0, q.dir * (q.entry - cand)) * q.qty).toFixed(2)} USDT, et il continue de monter avec le prix.` : kind === 'lock' ? `Gain sécurisé : stop remonté à ${fmtP(cand)} (${((q.dir * (cand - q.entry)) / R).toFixed(2)} R garanti).` : `Stop suiveur actif à ${fmtP(cand)}.`); }
+  }
+
+  /* Envoie le nouveau stop à Binance (au plus toutes les 2 s). Le bot garde aussi son propre contrôle à chaque prix. */
+  pushStop() {
+    const q = this.pos;
+    if (!q || q.upd || q.sl === q.slSent || !this.broker.updateStop || Date.now() - (q.updAt || 0) < 2000) return;
+    q.upd = true; q.updAt = Date.now();
+    const target = q.sl;
+    this.broker.updateStop(q, target).then(() => { q.slSent = target; }).catch((e) => { this.log('warn', 'Mise à jour du stop chez Binance impossible : ' + e.message + '. Le bot surveille le stop lui-même.'); q.slSent = target; }).finally(() => { q.upd = false; });
+  }
+
+  /* Qualité de l'entrée : refuse les entrées prises contre la dernière bougie, contre une mèche de rejet,
+     ou dans un marché sans direction. (Les règles « trop étiré », RSI extrême, grosse bougie et volume faible
+     ont été testées et retirées : elles supprimaient des trades gagnants.)
+     Retourne la raison du refus, ou null si l'entrée est propre. */
+  entryQuality(a, side) {
+    const range = a.range || 0;
+    if (side * a.body < -0.5) return 'la dernière bougie va dans le sens contraire.';
+    const wick = side > 0 ? a.upWick : a.dnWick;
+    if (range > 0 && wick / range > 0.45) return side > 0 ? 'mèche haute de rejet sur la dernière bougie.' : 'mèche basse de rejet sur la dernière bougie.';
+    const rangeExtreme = (side > 0 && a.pb < 0.15) || (side < 0 && a.pb > 0.85);
+    if (a.adx < 15 && !rangeExtreme) return `marché sans direction (ADX ${a.adx.toFixed(0)}).`;
+    return null;
+  }
+
+  skip(text) { this.decision = { kind: 'skip', text }; }
+
+  /* Plus petite quantité acceptée par Binance (quantité min, pas de quantité et valeur min), avec une marge :
+     en Spot, une vente sous le minimum serait refusée si le prix baisse. */
+  minQty(price) {
+    const m = this.fut ? 1.08 : 1.25;
+    return this.broker.minQtyFor ? this.broker.minQtyFor(price, m) : (MIN_NOTIONAL * m) / price;
+  }
+  minOrder(price) { const p = price || this.lastPrice; return this.minQty(p) * p; }
+
+  async consider(a, c) {
+    const cfg = this.cfg;
+    if (this.status === 'paused_day') { this.skip('Pause : limite de perte journalière atteinte.'); return; }
+    if (this.cooldown > 0) { this.cooldown--; this.skip(`Temps de repos après la dernière sortie : encore ${this.cooldown} bougie(s) avant de pouvoir ré-entrer (réglable dans les paramètres avancés).`); return; }
+    const s = a.score, thr = cfg.thr;
+    const side = s >= thr ? 1 : s <= -thr ? -1 : 0;
+    if (!side) { this.decision = { kind: 'wait', text: `En attente : score ${s > 0 ? '+' : ''}${s}, il faut au moins ±${thr}.` }; return; }
+    if (side < 0 && !(this.fut && cfg.allowShort)) { this.skip('Signal vendeur ignoré (pas de vente à découvert en Spot ou short désactivé).'); return; }
+    if (cfg.confirmCandle && this.prevScore * side < thr * 0.6) { this.skip(`Signal ${side > 0 ? 'acheteur' : 'vendeur'} (${s}) à confirmer à la prochaine bougie.`); return; }
+    if (cfg.htfGate && a.htfReady && a.parts.htf * side <= 0) { this.skip('Signal refusé : le timeframe supérieur va dans l\'autre sens.'); return; }
+    if (a.range > 4 * a.atr) { this.skip('Bougie trop violente (mèche anormale), le bot attend.'); return; }
+    if (cfg.entryFilter) {
+      const why = this.entryQuality(a, side);
+      if (why) { this.skip('Signal ' + (side > 0 ? 'acheteur' : 'vendeur') + ' (' + s + ') refusé : ' + why); return; }
+    }
+
+    const price = this.lastPrice ?? c.c;
+    const eq = this.equity(price);
+    let stopDist = Math.max(a.atr * cfg.slAtr, price * 0.0005);
+    if (cfg.structStop && a.swingLow !== undefined) {
+      const beyond = side > 0 ? price - (a.swingLow - 0.2 * a.atr) : (a.swingHigh + 0.2 * a.atr) - price;
+      if (beyond > stopDist) stopDist = Math.min(beyond, a.atr * 3.5);
+    }
+    const roundTrip = 2 * (feeRate(cfg.market) + cfg.slip);
+    const tpPct = (stopDist * cfg.rr) / price;
+    if (cfg.costFilter && tpPct < 2 * roundTrip) {
+      this.skip(`Ignoré : objectif ${(tpPct * 100).toFixed(2)} % trop proche des frais aller-retour (${(roundTrip * 100).toFixed(2)} %). Choisis un timeframe plus long.`);
+      return;
+    }
+    /* Taille : part du budget engagée (alloc), modulée par la force du signal (60 % à 100 % de cette part),
+       puis plafonnée pour que la perte, si le stop est touché, ne dépasse pas riskPct du capital. */
+    const conv = clamp(0.6 + (0.4 * (Math.abs(s) - thr)) / Math.max(1, (100 - thr) * 0.6), 0.6, 1);
+    const margin = Math.min(eq * 0.95, eq * (cfg.alloc / 100) * conv);
+    const wanted = this.fut ? margin * cfg.leverage : margin;
+    const lossCap = (eq * cfg.riskPct) / 100 / (stopDist / price);
+    const maxNotional = this.fut ? eq * cfg.leverage * 0.95 : eq * 0.98;
+    let qty = Math.min(wanted, lossCap, maxNotional) / price;
+    const sizedBy = lossCap < wanted ? 'plafonnée par la perte maximale' : 'selon la part du budget';
+    this.lastSizing = { conv, margin, wanted, lossCap, sizedBy };
+    if (this.broker.floorQty) qty = this.broker.floorQty(qty);
+    let notional = qty * price;
+    const minQ = this.minQty(price);
+    if (qty < minQ) {
+      const minN = minQ * price;
+      if (minN > maxNotional) { this.skip(`Budget trop faible : sur ${cfg.symbol}, Binance exige au moins ${minN.toFixed(2)} USDT par ordre, ton budget n'en permet que ${maxNotional.toFixed(2)}. Augmente le budget ou le levier, ou choisis une paire moins chère (DOGE, XRP).`); return; }
+      if ((minN * stopDist) / price > eq * Math.max(0.05, cfg.riskPct / 100)) { this.skip(`Ignoré : l'ordre minimum de Binance (${minN.toFixed(2)} USDT) ferait perdre plus de ${Math.max(5, cfg.riskPct).toFixed(0)} % du capital avec ce stop.`); return; }
+      qty = minQ; notional = minN;
+    }
+    if (this.fut) {
+      const liqDist = 1 / cfg.leverage - 0.005;
+      if (stopDist / price > liqDist * 0.7) { this.skip(`Levier x${cfg.leverage} trop élevé pour ce stop : la liquidation serait trop proche.`); return; }
+    }
+    await this.openPosition(side, a, price, qty, stopDist);
+  }
+
+  async openPosition(side, a, price, qty, stopDist) {
+    const cfg = this.cfg;
+    this.busy = true;
+    try {
+      const fill = await this.broker.open(side, qty, price);
+      const entry = fill.price, q = fill.qty;
+      const sl = entry - side * stopDist, tp = entry + side * stopDist * cfg.rr;
+      const notional = q * entry;
+      const locked = this.fut ? notional / cfg.leverage : notional;
+      const pos = {
+        dir: side, qty: q, entry, sl, tp, sl0: sl, risk: stopDist, extreme: entry, bars: 0,
+        be: false, trailing: false, kind: null, slSent: sl, feeOpen: fill.fee, locked, notional, t: this.lastT, wall: Date.now(),
+        liq: this.fut ? entry * (1 - side * (1 / cfg.leverage - 0.005)) : null, ids: {},
+      };
+      try { await this.broker.protect(pos); }
+      catch (e) {
+        this.log('danger', 'Stop de protection refusé par Binance, position refermée : ' + e.message);
+        this.cash -= locked + fill.fee;
+        this.pos = pos;
+        this.busy = false;
+        await this.closePosition(entry, 'protection impossible', this.lastT);
+        return;
+      }
+      this.cash -= locked + fill.fee;
+      this.pos = pos;
+      this.markers.push({ t: this.lastT, p: entry, type: side > 0 ? 'buy' : 'sell' });
+      const eqNow = this.cash + locked + fill.fee, lossIfSl = stopDist * q;
+      this.log('trade', `${side > 0 ? 'ACHAT (long)' : 'VENTE (short)'} ${q.toFixed(6)} ${cfg.symbol.replace('USDT', '')} à ${fmtP(entry)} · stop ${fmtP(sl)} · objectif ${fmtP(tp)}` +
+        (this.fut ? ` · levier x${cfg.leverage}` : '') + ` · marge engagée ${locked.toFixed(2)} USDT (${((locked / eqNow) * 100).toFixed(0)} % du capital), perte si stop ${lossIfSl.toFixed(2)} USDT (${((lossIfSl / eqNow) * 100).toFixed(1)} %). Raison : ${explain(a, side)}.`);
+      this.decision = { kind: 'hold', text: 'Position ouverte.' };
+    } catch (e) {
+      if (e.timeout) {
+        this.busy = false;
+        await this.halt("Binance n'a pas répondu à l'ordre d'entrée : il a peut-être été exécuté. Vérifie tes positions sur Binance, ferme-les si besoin, puis relance le bot.");
+        return;
+      }
+      this.log('danger', 'Ordre refusé : ' + e.message);
+      this.cooldown = 3;
+      await this.reconcile(price);
+    } finally { this.busy = false; }
+  }
+
+  /* Après une erreur d'ordre : vérifie qu'aucune position n'est restée ouverte chez Binance sans que le bot la suive. */
+  async reconcile(ref) {
+    if (!this.fut || !this.broker.positionAmt) return;
+    let amt = null;
+    try { amt = await this.broker.positionAmt(); } catch (e) { return; }
+    if (!amt || Math.abs(amt) < 1e-9) return;
+    this.log('danger', `Une position de ${amt} est ouverte sur Binance alors que l'ordre a été signalé en erreur. Le bot la referme par sécurité.`);
+    try { await this.broker.close({ dir: amt > 0 ? 1 : -1, qty: Math.abs(amt), ids: {} }, ref, 'position non suivie'); this.log('warn', 'Position non suivie refermée.'); }
+    catch (e) { this.log('danger', 'Fermeture impossible : ' + e.message + '. Ferme la position à la main sur Binance.'); }
+    this.status = 'halted';
+    this.decision = { kind: 'halt', text: 'Arrêté par prudence : une position non suivie a été détectée. Vérifie ton historique sur Binance avant de relancer.' };
+  }
+
+  async closePosition(ref, reason, t) {
+    const q = this.pos;
+    if (!q) return;
+    this.busy = true;
+    for (let i = 0; i < 40 && q.upd; i++) await new Promise((r) => setTimeout(r, 100));
+    try {
+      const res = await this.broker.close(q, ref, reason);
+      const exit = res.price;
+      const gross = q.dir * (exit - q.entry) * q.qty;
+      let proceeds = q.locked + gross - res.fee;
+      if (reason === 'liquidation') proceeds = 0;
+      const pnl = proceeds - q.locked - q.feeOpen;
+      this.cash += proceeds;
+      const r = pnl / (q.risk * q.qty);
+      this.trades.push({ t0: q.t, t1: t, side: q.dir, entry: q.entry, exit, qty: q.qty, pnl, r, reason, bars: q.bars });
+      this.markers.push({ t, p: exit, type: 'exit', win: pnl > 0 });
+      this.dayPnl = (this.dayPnl || 0) + pnl;
+      this.pos = null;
+      this.cooldown = this.cfg.cooldown;
+      this.retryAt = 0;
+      this.decision = { kind: 'wait', text: `Position fermée (${reason}, ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USDT). Le bot attend le prochain signal à la fermeture de bougie.` };
+      this.log(pnl > 0 ? 'win' : 'loss', `Sortie (${reason}) à ${fmtP(exit)} · ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USDT (${r >= 0 ? '+' : ''}${r.toFixed(2)} R).`);
+      if (this.hooks.afterTrade) this.hooks.afterTrade();
+    } catch (e) {
+      this.retryAt = Date.now() + 3000;
+      this.log('danger', 'Fermeture échouée, nouvel essai dans 3 s : ' + e.message);
+    } finally { this.busy = false; }
+  }
+
+  /* Position déjà fermée côté Binance (stop ou objectif déclenché sur le serveur) */
+  async externalClose() {
+    if (!this.pos) return;
+    const q = this.pos, p = this.lastPrice;
+    const profitSide = q.dir * (p - q.entry) >= 0;
+    const exit = profitSide ? (q.be || q.trailing ? q.sl : q.tp) : q.sl;
+    const gross = q.dir * (exit - q.entry) * q.qty;
+    const fee = q.qty * exit * feeRate(this.cfg.market);
+    const proceeds = q.locked + gross - fee;
+    const pnl = proceeds - q.locked - q.feeOpen;
+    this.cash += proceeds;
+    this.trades.push({ t0: q.t, t1: this.lastT, side: q.dir, entry: q.entry, exit, qty: q.qty, pnl, r: pnl / (q.risk * q.qty), reason: 'clôturé par Binance (estimé)', bars: q.bars });
+    this.markers.push({ t: this.lastT, p: exit, type: 'exit', win: pnl > 0 });
+    this.dayPnl = (this.dayPnl || 0) + pnl;
+    this.pos = null; this.cooldown = this.cfg.cooldown;
+    this.decision = { kind: 'wait', text: `Position fermée par Binance (${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USDT estimé). Le bot attend le prochain signal.` };
+    this.log(pnl > 0 ? 'win' : 'loss', `Stop/objectif déclenché sur Binance · ${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)} USDT (estimé).`);
+    if (this.hooks.afterTrade) this.hooks.afterTrade();
+  }
+}
+
+const _pfmt = {};
+function fmtP(p) {
+  const d = p >= 1000 ? 2 : p >= 10 ? 3 : p >= 1 ? 4 : 5;
+  return (_pfmt[d] || (_pfmt[d] = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }))).format(p);
+}
+
+/* ---------------- Binance (testnet / réel) ---------------- */
+
+function binanceEndpoints(market, env) {
+  const t = env === 'testnet';
+  // Futures : depuis le 2026-04-23 Binance a retiré l'ancienne URL /ws pour les flux de marché (aggTrade, kline, markPrice).
+  const spot = { base: t ? 'https://testnet.binance.vision' : 'https://api.binance.com', ws: [t ? 'wss://stream.testnet.binance.vision/ws' : 'wss://stream.binance.com:9443/ws'] };
+  const fut = {
+    base: t ? 'https://testnet.binancefuture.com' : 'https://fapi.binance.com',
+    ws: t ? ['wss://fstream.binancefuture.com/market/ws', 'wss://fstream.binancefuture.com/ws'] : ['wss://fstream.binance.com/market/ws', 'wss://fstream.binance.com/ws'],
+  };
+  const m = market === 'futures' ? fut : spot;
+  return { base: m.base, ws: m.ws, spotBase: spot.base };
+}
+
+async function hmacHex(secret, msg) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(msg));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+class LiveBroker {
+  constructor(cfg) {
+    this.cfg = cfg; this.name = cfg.env; this.fut = cfg.market === 'futures';
+    this.ep = binanceEndpoints(cfg.market, cfg.env);
+    this.key = cfg.apiKey; this.secret = cfg.apiSecret; this.offset = 0; this.f = null;
+  }
+
+  async call(method, path, params = {}, signed = false, base) {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null) q.set(k, String(v));
+    let url = (base || this.ep.base) + path;
+    const headers = {};
+    if (signed) {
+      headers['X-MBX-APIKEY'] = this.key;
+      q.set('timestamp', String(Date.now() + this.offset));
+      q.set('recvWindow', '10000');
+      const qs = q.toString();
+      url += '?' + qs + '&signature=' + (await hmacHex(this.secret, qs));
+    } else if ([...q].length) url += '?' + q.toString();
+    const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const to = ctl ? setTimeout(() => ctl.abort(), this.timeoutMs || (method === 'GET' ? 10000 : 15000)) : null;
+    let res, txt;
+    try {
+      res = await fetch(url, { method, headers, signal: ctl ? ctl.signal : undefined });
+      txt = await res.text();
+    } catch (e) {
+      if (e && e.name === 'AbortError') { const er = new Error('Binance ne répond pas (délai dépassé)'); er.timeout = true; throw er; }
+      throw e;
+    } finally { if (to) clearTimeout(to); }
+    let js; try { js = JSON.parse(txt); } catch (e) { js = { raw: txt }; }
+    if (!res.ok) {
+      const err = new Error((js.msg || txt || res.statusText) + (js.code ? ` (code ${js.code})` : ''));
+      err.code = js.code; err.status = res.status; throw err;
+    }
+    return js;
+  }
+
+  async init(symbol, setup = true) {
+    const timePath = this.fut ? '/fapi/v1/time' : '/api/v3/time';
+    const t = await this.call('GET', timePath);
+    this.offset = t.serverTime - Date.now();
+    const info = this.fut ? await this.call('GET', '/fapi/v1/exchangeInfo') : await this.call('GET', '/api/v3/exchangeInfo', { symbol });
+    const s = (info.symbols || []).find((x) => x.symbol === symbol);
+    if (!s) throw new Error('Paire introuvable sur ' + (this.fut ? 'Futures' : 'Spot') + ' : ' + symbol);
+    const fl = {}; for (const x of s.filters) fl[x.filterType] = x;
+    const lot = fl.MARKET_LOT_SIZE && +fl.MARKET_LOT_SIZE.stepSize > 0 ? fl.MARKET_LOT_SIZE : fl.LOT_SIZE;
+    this.f = {
+      step: +lot.stepSize, minQty: +lot.minQty, tick: +fl.PRICE_FILTER.tickSize,
+      minNotional: +((fl.NOTIONAL && fl.NOTIONAL.minNotional) || (fl.MIN_NOTIONAL && (fl.MIN_NOTIONAL.notional || fl.MIN_NOTIONAL.minNotional)) || 5),
+    };
+    this.symbol = symbol; this.base = s.baseAsset;
+    try {
+      const tk = await this.call('GET', this.fut ? '/fapi/v1/ticker/price' : '/api/v3/ticker/price', { symbol });
+      this.refPx = +tk.price;
+    } catch (e) { this.refPx = 0; }
+    if (this.fut) {
+      const pm = await this.call('GET', '/fapi/v1/positionSide/dual', {}, true);
+      if (pm.dualSidePosition) throw new Error('Ton compte Futures est en mode Hedge. Passe en mode « One-way » (Préférences Futures sur Binance), puis relance.');
+    }
+    if (this.fut && setup) {
+      await this.call('POST', '/fapi/v1/leverage', { symbol, leverage: this.cfg.leverage }, true);
+      try { await this.call('POST', '/fapi/v1/marginType', { symbol, marginType: 'ISOLATED' }, true); }
+      catch (e) { if (e.code !== -4046) throw e; }
+    }
+  }
+
+  floorQty(q) { const st = this.f.step; return +(Math.floor(q / st + 1e-9) * st).toFixed(this.dec(st)); }
+  minQtyFor(price, margin) {
+    const st = this.f.step, need = Math.max(this.f.minQty, (this.f.minNotional * margin) / price);
+    return +(Math.ceil(need / st - 1e-9) * st).toFixed(this.dec(st));
+  }
+  minOrderUsd(price) { return this.minQtyFor(price || this.refPx, this.fut ? 1.08 : 1.25) * (price || this.refPx); }
+  minBudget(price) {
+    const px = price || this.refPx, usd = this.minOrderUsd(px);
+    return this.fut ? usd / (this.cfg.leverage * 0.9) : usd / 0.98;
+  }
+
+  dec(step) { const s = String(step); return s.includes('.') ? s.replace(/0+$/, '').split('.')[1].length : 0; }
+  roundQty(q) { const st = this.f.step; return (Math.floor(q / st + 1e-9) * st).toFixed(this.dec(st)); }
+  roundPrice(p) { const t = this.f.tick; return (Math.round(p / t) * t).toFixed(this.dec(t)); }
+
+  async balance() {
+    if (this.fut) {
+      let b;
+      try { b = await this.call('GET', '/fapi/v2/balance', {}, true); }
+      catch (e) { b = await this.call('GET', '/fapi/v3/balance', {}, true); }
+      const u = b.find((x) => x.asset === 'USDT');
+      return u ? { total: +u.balance, free: +u.availableBalance } : { total: 0, free: 0 };
+    }
+    const a = await this.call('GET', '/api/v3/account', {}, true);
+    const u = a.balances.find((x) => x.asset === 'USDT');
+    return u ? { total: +u.free + +u.locked, free: +u.free } : { total: 0, free: 0 };
+  }
+
+  async checkKeys() {
+    const out = [];
+    const b = await this.balance();
+    out.push(`Clés valides. Solde USDT disponible : ${b.free.toFixed(2)}.`);
+    if (this.cfg.env === 'live') {
+      try {
+        const r = await this.call('GET', '/sapi/v1/account/apiRestrictions', {}, true, this.ep.spotBase);
+        if (r.enableWithdrawals) out.push('DANGER : cette clé a le droit de retrait. Crée une clé sans retrait.');
+        else out.push('Bien : la clé n\'a pas le droit de retrait.');
+        if (!r.ipRestrict) out.push('Conseil : restreins la clé à ton adresse IP dans Binance.');
+      } catch (e) { out.push('Droits de la clé non vérifiables : ' + e.message); }
+    }
+    return { messages: out, balance: b };
+  }
+
+  async open(side, qty, ref) {
+    const q = this.roundQty(qty);
+    if (+q < this.f.minQty || +q * ref < this.f.minNotional) throw new Error(`Quantité trop faible (min ${this.f.minQty}, ${this.f.minNotional} USDT)`);
+    const s = side > 0 ? 'BUY' : 'SELL';
+    if (this.fut) {
+      const o = await this.call('POST', '/fapi/v1/order', { symbol: this.symbol, side: s, type: 'MARKET', quantity: q, newOrderRespType: 'RESULT' }, true);
+      const f = await this.confirmFill(o, side, +q, ref);
+      return { price: f.price, qty: f.qty, fee: f.qty * f.price * feeRate('futures') };
+    }
+    const o = await this.call('POST', '/api/v3/order', { symbol: this.symbol, side: 'BUY', type: 'MARKET', quantity: q, newOrderRespType: 'FULL' }, true);
+    const ex = +o.executedQty, px = +o.cummulativeQuoteQty / ex;
+    let net = ex, fee = 0;
+    for (const f of o.fills || []) {
+      const c = +f.commission;
+      if (f.commissionAsset === this.base) { net -= c; fee += c * px; }
+      else if (f.commissionAsset === 'USDT') fee += c;
+      else fee += (+f.qty * +f.price) * 0.00075;
+    }
+    return { price: px, qty: net, fee };
+  }
+
+  /* Confirme l'exécution d'un ordre Futures. La réponse immédiate de Binance peut arriver sans prix moyen,
+     et l'ordre peut mettre un instant à être consultable (erreur -2013) : on réessaie, puis on se rabat sur la position réelle. */
+  async confirmFill(o, side, qty, ref) {
+    let px = +o.avgPrice, ex = +o.executedQty;
+    for (let i = 0; i < 4 && !(px > 0 && ex > 0); i++) {
+      await new Promise((r) => setTimeout(r, 300 + i * 300));
+      try {
+        const g = await this.call('GET', '/fapi/v1/order', { symbol: this.symbol, orderId: o.orderId }, true);
+        px = +g.avgPrice; ex = +g.executedQty;
+        if (g.status === 'REJECTED' || g.status === 'EXPIRED' || g.status === 'CANCELED') throw new Error('Ordre non exécuté (' + g.status + ')');
+      } catch (e) { if (e.code !== -2013 && !e.timeout) throw e; }
+    }
+    if (px > 0 && ex > 0) return { price: px, qty: ex };
+    // dernier recours : lire la position ouverte
+    const r = await this.call('GET', '/fapi/v3/positionRisk', { symbol: this.symbol }, true).catch(() => this.call('GET', '/fapi/v2/positionRisk', { symbol: this.symbol }, true));
+    const p = (Array.isArray(r) ? r : [r]).find((x) => x.symbol === this.symbol);
+    const amt = p ? +p.positionAmt : 0;
+    if (Math.abs(amt) > 1e-12 && Math.sign(amt) === side) return { price: +p.entryPrice > 0 ? +p.entryPrice : ref, qty: Math.abs(amt) };
+    throw new Error("Ordre non exécuté (aucune position ouverte chez Binance)");
+  }
+
+  async algo(pos, type, trigger) {
+    const closeSide = pos.dir > 0 ? 'SELL' : 'BUY';
+    return this.call('POST', '/fapi/v1/algoOrder', {
+      algoType: 'CONDITIONAL', symbol: this.symbol, side: closeSide, type, triggerPrice: this.roundPrice(trigger),
+      // stop sur le prix de référence (moins sensible aux mèches), objectif sur le dernier prix échangé (déclenché dès qu'il est touché)
+      closePosition: 'true', workingType: type === 'TAKE_PROFIT_MARKET' ? 'CONTRACT_PRICE' : 'MARK_PRICE', priceProtect: 'false',
+    }, true);
+  }
+
+  async protect(pos) {
+    if (!this.fut) return;
+    const sl = await this.algo(pos, 'STOP_MARKET', pos.sl);
+    pos.ids.sl = sl.algoId;
+    try { const tp = await this.algo(pos, 'TAKE_PROFIT_MARKET', pos.tp); pos.ids.tp = tp.algoId; }
+    catch (e) {
+      try { await this.call('DELETE', '/fapi/v1/algoOrder', { algoId: pos.ids.sl }, true); } catch (e2) { /* ignoré */ }
+      throw e;
+    }
+  }
+
+  async updateStop(pos, newSl) {
+    if (!this.fut) return;
+    const old = pos.ids.sl;
+    const n = await this.algo(pos, 'STOP_MARKET', newSl);
+    pos.ids.sl = n.algoId;
+    if (old) { try { await this.call('DELETE', '/fapi/v1/algoOrder', { algoId: old }, true); } catch (e) { /* déjà déclenché */ } }
+  }
+
+  async close(pos, ref) {
+    if (this.fut) {
+      try { await this.call('DELETE', '/fapi/v1/algoOpenOrders', { symbol: this.symbol }, true); } catch (e) { /* aucun ordre */ }
+      try {
+        let o = await this.call('POST', '/fapi/v1/order', { symbol: this.symbol, side: pos.dir > 0 ? 'SELL' : 'BUY', type: 'MARKET', quantity: this.roundQty(pos.qty), reduceOnly: 'true', newOrderRespType: 'RESULT' }, true);
+        if (!(+o.avgPrice > 0)) o = await this.call('GET', '/fapi/v1/order', { symbol: this.symbol, orderId: o.orderId }, true);
+        const px = +o.avgPrice || ref;
+        this.call('DELETE', '/fapi/v1/algoOpenOrders', { symbol: this.symbol }, true).catch(() => {});
+        return { price: px, fee: pos.qty * px * feeRate('futures') };
+      } catch (e) {
+        if (e.code === -2022) return { price: ref, fee: pos.qty * ref * feeRate('futures') };
+        throw e;
+      }
+    }
+    const o = await this.call('POST', '/api/v3/order', { symbol: this.symbol, side: 'SELL', type: 'MARKET', quantity: this.roundQty(pos.qty), newOrderRespType: 'FULL' }, true);
+    const ex = +o.executedQty, px = +o.cummulativeQuoteQty / ex;
+    let fee = 0;
+    for (const f of o.fills || []) fee += f.commissionAsset === 'USDT' ? +f.commission : (+f.qty * +f.price) * 0.00075;
+    return { price: px, fee };
+  }
+
+  async positionAmt() {
+    if (!this.fut) return null;
+    let r;
+    try { r = await this.call('GET', '/fapi/v3/positionRisk', { symbol: this.symbol }, true); }
+    catch (e) { r = await this.call('GET', '/fapi/v2/positionRisk', { symbol: this.symbol }, true); }
+    const p = (Array.isArray(r) ? r : [r]).find((x) => x.symbol === this.symbol);
+    return p ? +p.positionAmt : 0;
+  }
+}
+
+/* Mode Papier : vraies données Binance (prix, filtres de quantité, frais), mais aucun ordre n'est envoyé.
+   N'utilise que des requêtes publiques : aucune clé API. Les ordres sont exécutés virtuellement au prix du marché
+   avec glissement et frais, et le solde est celui du budget choisi. */
+class PaperBroker extends LiveBroker {
+  constructor(cfg) { super({ ...cfg, env: 'paper' }); this.name = 'paper'; this.wallet = cfg.budget; }
+  async init(symbol) {
+    const t = await this.call('GET', this.fut ? '/fapi/v1/time' : '/api/v3/time');
+    this.offset = t.serverTime - Date.now();
+    const info = this.fut ? await this.call('GET', '/fapi/v1/exchangeInfo') : await this.call('GET', '/api/v3/exchangeInfo', { symbol });
+    const s = (info.symbols || []).find((x) => x.symbol === symbol);
+    if (!s) throw new Error('Paire introuvable sur ' + (this.fut ? 'Futures' : 'Spot') + ' : ' + symbol);
+    const fl = {}; for (const x of s.filters) fl[x.filterType] = x;
+    const lot = fl.MARKET_LOT_SIZE && +fl.MARKET_LOT_SIZE.stepSize > 0 ? fl.MARKET_LOT_SIZE : fl.LOT_SIZE;
+    this.f = {
+      step: +lot.stepSize, minQty: +lot.minQty, tick: +fl.PRICE_FILTER.tickSize,
+      minNotional: +((fl.NOTIONAL && fl.NOTIONAL.minNotional) || (fl.MIN_NOTIONAL && (fl.MIN_NOTIONAL.notional || fl.MIN_NOTIONAL.minNotional)) || 5),
+    };
+    this.symbol = symbol; this.base = s.baseAsset;
+    try { this.refPx = +(await this.call('GET', this.fut ? '/fapi/v1/ticker/price' : '/api/v3/ticker/price', { symbol })).price; } catch (e) { this.refPx = 0; }
+  }
+  async balance() { return { total: this.wallet, free: this.wallet }; }
+  async open(side, qty, ref) {
+    const px = side > 0 ? ref * (1 + this.cfg.slip) : ref * (1 - this.cfg.slip);
+    return { price: px, qty, fee: qty * px * feeRate(this.cfg.market) };
+  }
+  async protect() {}
+  async updateStop() {}
+  async close(pos, ref, reason) {
+    if (reason === 'liquidation') return { price: ref, fee: 0 };
+    const px = pos.dir > 0 ? ref * (1 - this.cfg.slip) : ref * (1 + this.cfg.slip);
+    return { price: px, fee: pos.qty * px * feeRate(this.cfg.market) };
+  }
+  async positionAmt() { return null; }
+}
+
+async function fetchWarmup(cfg) {
+  const ep = binanceEndpoints(cfg.market, cfg.env);
+  const native = ['1m', '3m', '5m', '15m', '30m', '1h'];
+  const useNative = native.includes(cfg.tf);
+  const interval = useNative ? cfg.tf : '1s';
+  const spotPath = cfg.market === 'spot' || !useNative;
+  const base = spotPath ? ep.spotBase : ep.base;
+  const path = spotPath ? '/api/v3/klines' : '/fapi/v1/klines';
+  const res = await fetch(`${base}${path}?symbol=${cfg.symbol}&interval=${interval}&limit=1000`);
+  if (!res.ok) throw new Error('klines HTTP ' + res.status);
+  const rows = (await res.json()).map((r) => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] }));
+  rows.pop();
+  if (useNative) return rows;
+  const ms = TF_SEC[cfg.tf] * 1000, out = [];
+  for (const r of rows) {
+    const b = Math.floor(r.t / ms) * ms, last = out[out.length - 1];
+    if (last && last.t === b) { last.h = Math.max(last.h, r.h); last.l = Math.min(last.l, r.l); last.c = r.c; last.v += r.v; }
+    else out.push({ t: b, o: r.o, h: r.h, l: r.l, c: r.c, v: r.v });
+  }
+  out.pop();
+  return out;
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { riskParams, TFS, TF_SEC, PROFILES, DEFAULTS, MIN_CANDLES, emaSeries, rsiLast, atrLast, adxLast, macdHist, bbAt, aggregate, analyze, explain,
+    CandleBuilder, SimMarket, simTickStep, SimBroker, Bot, hmacHex, LiveBroker, PaperBroker, binanceEndpoints, feeRate, fmtP, mulberry32 };
+}
+
+</script>
+<script>
+const IS_ARTIFACT = false;
+(function () {
+'use strict';
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ---------------- Flux Binance en direct ---------------- */
+class LiveFeed {
+  /* Prix en direct : WebSocket (plusieurs URL essayées), avec repli automatique sur des requêtes toutes les secondes. */
+  constructor(cfg, onTick, onState, offset) {
+    this.cfg = cfg; this.onTick = onTick; this.onState = onState; this.offset = offset || 0;
+    this.ep = binanceEndpoints(cfg.market, cfg.mode);
+    this.ui = 0; this.retry = 0; this.stopped = false; this.lastMsg = 0; this.gotAny = false; this.polling = false;
+  }
+  start() { this.stopped = false; this.lastMsg = Date.now(); this.connect(); this.pollTimer = setInterval(() => this.pollRest(), 1000); }
+  connect() {
+    const url = `${this.ep.ws[this.ui]}/${this.cfg.symbol.toLowerCase()}@aggTrade`;
+    try { this.ws = new WebSocket(url); } catch (e) { this.next(); return; }
+    this.ws.onopen = () => { this.retry = 0; };
+    this.ws.onmessage = (ev) => {
+      try {
+        const m = JSON.parse(ev.data);
+        if (m.e === 'aggTrade') { this.lastMsg = Date.now(); this.gotAny = true; this.onState('ws'); this.onTick(m.T, +m.p, +m.q); }
+      } catch (e) { /* message ignoré */ }
+    };
+    this.ws.onclose = () => { if (!this.stopped) this.next(); };
+    this.ws.onerror = () => {};
+  }
+  next() {
+    if (this.stopped) return;
+    if (!this.gotAny && this.ep.ws.length > 1) this.ui = (this.ui + 1) % this.ep.ws.length;
+    setTimeout(() => { if (!this.stopped) this.connect(); }, Math.min(10000, 1000 * ++this.retry));
+  }
+  async pollRest() {
+    if (this.stopped) return;
+    if (this.ws && this.ws.readyState === 1 && this.lastMsg && Date.now() - this.lastMsg > 20000) { try { this.ws.close(); } catch (e) { /* rien */ } }
+    if (this.polling || Date.now() - this.lastMsg < 3000) return;
+    this.polling = true;
+    try {
+      const path = this.cfg.market === 'futures' ? '/fapi/v1/ticker/price' : '/api/v3/ticker/price';
+      const r = await fetch(`${this.ep.base}${path}?symbol=${this.cfg.symbol}`);
+      const j = await r.json();
+      const p = +j.price;
+      if (!(p > 0)) throw new Error(j.msg || 'prix invalide');
+      if (!this.stopped && Date.now() - this.lastMsg >= 3000) { this.onState('rest'); this.onTick(Date.now() + this.offset, p, 0); }
+    } catch (e) { if (!this.stopped) this.onState('error', e.message); }
+    finally { this.polling = false; }
+  }
+  stop() { this.stopped = true; clearInterval(this.pollTimer); try { this.ws && this.ws.close(); } catch (e) { /* rien */ } }
+}
+
+/* ---------------- État ---------------- */
+const MODE_HINT = {
+  paper: 'Vraies données Binance en direct (chart, bougies, filtres de quantité, frais), mais les ordres sont simulés : aucun argent, aucune clé API. Le meilleur moyen de tester le bot dans les conditions réelles.',
+  sim: 'Prix synthétiques générés ici. Idéal pour comprendre le bot, sans aucun risque. Les résultats ne prouvent rien sur les vrais marchés.',
+  testnet: 'Vrais prix et vrais ordres sur Binance Testnet, avec de l\'argent fictif. Crée des clés sur testnet.binance.vision (Spot) ou testnet.binancefuture.com (Futures).',
+  live: 'Ordres réels avec ton argent. Commence par le Testnet.',
+};
+const PROF_HINT = {
+  prudent: 'Peu de trades, signaux très nets. Engage environ 30 % du budget, perte maximale 3 % par trade.',
+  equilibre: 'Compromis entre fréquence et qualité. Engage environ 60 % du budget, perte maximale 8 % par trade.',
+  agressif: 'Plus de trades, signaux moins stricts. Peut engager tout le budget, perte maximale 25 % par trade : une série de pertes peut vider le compte vite.',
+  perso: 'Réglages personnalisés.',
+};
+const NUMS = [
+  ['thr', 'thr', 10, 90, false], ['alloc', 'alloc', 5, 100, false], ['riskPct', 'riskPct', 0.5, 100, false], ['slAtr', 'slAtr', 0.5, 6, false], ['rr', 'rr', 0.8, 6, false],
+  ['trailAtr', 'trailAtr', 0.5, 6, false], ['maxBars', 'maxBars', 3, 500, true], ['maxDailyLoss', 'maxDailyLoss', 0.5, 50, false], ['maxDD', 'maxDD', 2, 80, false], ['lockMult', 'lockMult', 1.1, 10, false], ['cooldown', 'cooldown', 0, 20, true], ['stepK', 'stepK', 0, 0.95, false],
+  ['budget', 'budget', 5, 10000000, false],
+];
+const CHECKS = [['entryFilter', 'entryFilter'], ['structStop', 'structStop'], ['lockFees', 'lockFees'], ['trailing', 'trailing'], ['allowShort', 'allowShort'], ['htfGate', 'htfGate'], ['confirmCandle', 'confirmCandle'], ['costFilter', 'costFilter'], ['closeOnStop', 'closeOnStop']];
+const PROF_KEYS = ['thr', 'alloc', 'riskPct', 'slAtr', 'rr', 'trailAtr', 'maxBars'];
+
+let cfg = { ...DEFAULTS, closeOnStop: true };
+try {
+  const j = JSON.parse(localStorage.getItem('autotrader.cfg') || 'null');
+  if (j) cfg = { ...cfg, ...j, apiKey: '', apiSecret: '' };
+} catch (e) { /* stockage indisponible */ }
+if (IS_ARTIFACT && cfg.mode !== 'sim') cfg.mode = 'sim';
+if (!TFS.includes(cfg.tf)) cfg.tf = '5m';
+try { const old = JSON.parse(localStorage.getItem('autotrader.cfg') || 'null'); if (old && old.alloc === undefined) Object.assign(cfg, PROFILES[cfg.profile] || PROFILES.equilibre); } catch (e) { /* ignoré */ }
+
+const S = {
+  bot: null, builder: null, market: null, feed: null, broker: null, running: false, stopping: false,
+  frameTimer: null, uiTimer: null, syncTimer: null, balTimer: null, drainTimer: null,
+  acc: 0, dt: 1, proc: false, pending: [], prevA: null, balance: null, wake: null, feedState: '', lastTickAt: 0, staleWarned: false,
+};
+
+function saveCfg() {
+  try { const c = { ...cfg }; delete c.apiKey; delete c.apiSecret; localStorage.setItem('autotrader.cfg', JSON.stringify(c)); } catch (e) { /* ignoré */ }
+}
+
+/* ---------------- Formatage ---------------- */
+const nf = (d) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const f2 = nf(2);
+const money = (x) => f2.format(x);
+const signed = (x, d = 2) => (x >= 0 ? '+' : '−') + nf(d).format(Math.abs(x));
+const cls = (x) => (x > 0.005 ? 'pos' : x < -0.005 ? 'neg' : '');
+const tfmt = (t, sec) => new Date(t).toLocaleTimeString('fr-FR', sec ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' });
+
+function toast(msg) {
+  const el = $('toast'); el.textContent = msg; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 5000);
+}
+
+/* ---------------- Contrôles ---------------- */
+function setSeg(id, v) {
+  $(id).querySelectorAll('button').forEach((b) => { const on = b.dataset.v === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+}
+function bindSeg(id, fn) {
+  $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || b.disabled || S.running) return; fn(b.dataset.v); });
+}
+
+function buildTfChips() {
+  const box = $('tfChips'); box.innerHTML = '';
+  TFS.forEach((t) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.dataset.v = t;
+    b.addEventListener('click', () => { if (S.running) return; cfg.tf = t; saveCfg(); refreshControls(); schedulePreview(); });
+    box.appendChild(b);
+  });
+}
+
+const PROFILE_LEVEL = { prudent: 50, equilibre: 100, agressif: 150 };
+function applyProfile(name) {
+  cfg.profile = name;
+  cfg.riskLevel = PROFILE_LEVEL[name] ?? cfg.riskLevel;
+  Object.assign(cfg, riskParams(cfg.riskLevel));
+  writeNums();
+}
+function writeNums() {
+  NUMS.forEach(([id, key]) => { $(id).value = cfg[key]; });
+  CHECKS.forEach(([id, key]) => { $(id).checked = !!cfg[key]; });
+}
+
+function refreshControls() {
+  setSeg('segMode', cfg.mode); setSeg('segMarket', cfg.market); setSeg('segProfile', cfg.profile);
+  const fut = cfg.market === 'futures';
+  $('levBox').hidden = !fut; $('spotHint').hidden = fut; $('shortRow').hidden = !fut;
+  $('leverage').value = cfg.leverage; $('levVal').textContent = '×' + cfg.leverage;
+  const liq = (1 / cfg.leverage - 0.005) * 100;
+  $('levHint').textContent = `Liquidation si le prix recule d'environ ${liq.toFixed(1)} % contre ta position. Le bot place toujours son stop bien avant.` + (cfg.leverage > 20 ? ' Au-delà de ×20, le bot refusera souvent d\'entrer : le stop serait trop proche de la liquidation.' : '');
+  $('levHint').className = 'hint' + (cfg.leverage > 20 ? ' warn' : '');
+  $('tfChips').querySelectorAll('button').forEach((b) => { const on = b.dataset.v === cfg.tf; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  const sub = TF_SEC[cfg.tf] < 60;
+  $('tfHint').textContent = sub
+    ? 'Sous 1 minute, les frais dépassent presque toujours le mouvement attendu. Le bot ouvrira très peu de trades, sauf si tu désactives le filtre de frais (déconseillé).'
+    : 'Chaque bougie fermée déclenche une analyse. Plus le timeframe est long, plus les signaux sont fiables et les frais pèsent peu.';
+  $('tfHint').className = 'hint' + (sub ? ' warn' : '');
+  $('modeHint').textContent = MODE_HINT[cfg.mode];
+  $('apiBox').hidden = cfg.mode === 'sim' || cfg.mode === 'paper';
+  $('liveAckRow').hidden = cfg.mode !== 'live';
+  $('speedBox').hidden = cfg.mode !== 'sim';
+  $('speed').value = String(cfg.speed);
+  const per = TF_SEC[cfg.tf] / cfg.speed;
+  $('speedHint').textContent = `Une bougie ${cfg.tf} dure environ ${per >= 10 ? Math.round(per) : per.toFixed(1)} s à l'écran.`;
+  $('profHint').textContent = PROF_HINT[cfg.profile] || PROF_HINT.perso;
+  const rl = cfg.riskLevel ?? PROFILE_LEVEL[cfg.profile] ?? 100;
+  $('riskLevel').value = rl; $('riskVal').textContent = rl + ' %';
+  $('riskHint').textContent = `À ${rl} % de risque : le bot engage jusqu'à ${cfg.alloc} % du budget, accepte de perdre au plus ${cfg.riskPct} % du capital par trade et entre à partir d'un score de ±${cfg.thr}.` + (rl >= 150 ? ' Zone dangereuse : une courte série de pertes peut vider le compte.' : rl === 0 ? ' Positions minuscules : les gains et les pertes seront très faibles.' : '');
+  $('riskHint').className = 'hint' + (rl >= 150 ? ' warn' : '');
+  const rt = 2 * (feeRate(cfg.market) + cfg.slip) * 100;
+  $('costHint').textContent = `Frais estimés : ${rt.toFixed(2)} % par trade aller-retour (${cfg.market === 'futures' ? 'Futures' : 'Spot'}, ordres au marché, glissement inclus).`;
+  $('symbol').value = cfg.symbol;
+  const b = $('banner');
+  b.className = 'banner' + (cfg.mode === 'live' ? ' live' : cfg.mode === 'testnet' || cfg.mode === 'paper' ? ' test' : '');
+  b.textContent = cfg.mode === 'live' ? 'MODE RÉEL : le bot passe de vrais ordres avec ton argent. Garde cet onglet ouvert et visible tant que le bot tourne.'
+    : cfg.mode === 'paper' ? 'Mode Papier : prix réels de Binance en direct, ordres simulés, aucun argent engagé. Garde cet onglet ouvert tant que le bot tourne.'
+    : cfg.mode === 'testnet' ? 'Mode Testnet : ordres réels sur Binance Testnet, argent fictif. Garde cet onglet ouvert tant que le bot tourne.'
+    : 'Mode simulation : prix synthétiques, aucun ordre envoyé. Les résultats montrent le fonctionnement du bot, pas sa rentabilité réelle.';
+  $('bannerArtifact').hidden = !IS_ARTIFACT;
+  $('segMode').querySelectorAll('button').forEach((x) => { if (IS_ARTIFACT && x.dataset.v !== 'sim') x.disabled = true; });
+}
+
+function bindControls() {
+  bindSeg('segMode', (v) => { cfg.mode = v; saveCfg(); refreshControls(); });
+  bindSeg('segMarket', (v) => { cfg.market = v; if (v === 'spot') cfg.leverage = Math.max(1, cfg.leverage); saveCfg(); refreshControls(); schedulePreview(); });
+  $('riskLevel').addEventListener('input', (e) => {
+    cfg.riskLevel = +e.target.value; cfg.profile = 'perso';
+    Object.assign(cfg, riskParams(cfg.riskLevel)); writeNums(); saveCfg(); refreshControls();
+  });
+  bindSeg('segProfile', (v) => { applyProfile(v); saveCfg(); refreshControls(); });
+  $('leverage').addEventListener('input', (e) => { cfg.leverage = +e.target.value; saveCfg(); refreshControls(); });
+  $('symbol').addEventListener('change', (e) => { cfg.symbol = e.target.value; saveCfg(); schedulePreview(); });
+  $('speed').addEventListener('change', (e) => { cfg.speed = +e.target.value; saveCfg(); refreshControls(); });
+  $('budgetChips').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || S.running) return; cfg.budget = +b.dataset.b; $('budget').value = cfg.budget; saveCfg(); });
+  NUMS.forEach(([id, key, min, max, int]) => {
+    const el = $(id);
+    el.addEventListener('input', () => {
+      let v = parseFloat(el.value); if (!isFinite(v)) return;
+      v = Math.min(max, Math.max(min, v)); if (int) v = Math.round(v);
+      cfg[key] = v;
+      if (PROF_KEYS.includes(key)) { cfg.profile = 'perso'; setSeg('segProfile', ''); $('profHint').textContent = PROF_HINT.perso; }
+      saveCfg();
+    });
+    el.addEventListener('change', () => { el.value = cfg[key]; });
+  });
+  CHECKS.forEach(([id, key]) => { $(id).addEventListener('change', (e) => { cfg[key] = e.target.checked; saveCfg(); }); });
+  $('closeNow').addEventListener('click', async () => {
+    const bot = S.bot;
+    if (!S.running || !bot || !bot.pos) return;
+    if (!confirm('Fermer la position maintenant au prix du marché ?')) return;
+    const btn = $('closeNow'); btn.disabled = true;
+    try {
+      for (let i = 0; i < 30 && bot.busy; i++) await sleep(100);
+      if (bot.pos && !bot.busy) {
+        addLog('info', 'Fermeture manuelle demandée.');
+        await bot.closePosition(bot.lastPrice, 'fermeture manuelle', bot.lastT);
+      }
+    } catch (e) { addLog('danger', 'Fermeture manuelle impossible : ' + e.message); }
+    finally { btn.disabled = false; render(); }
+  });
+  $('go').addEventListener('click', () => { if (S.running) stopSession(); else startSession(); });
+  $('testConn').addEventListener('click', testConnection);
+}
+
+function lockUI(lock) {
+  $('config').classList.toggle('locked', lock);
+  $('config').querySelectorAll('input,select,button').forEach((el) => { el.disabled = lock; });
+  if (!lock) refreshControls();
+}
+
+/* ---------------- Aperçu (sans trading) ---------------- */
+let prevTimer = null;
+function schedulePreview() { clearTimeout(prevTimer); prevTimer = setTimeout(buildPreview, 150); }
+
+function buildPreview() {
+  if (S.running) return;
+  S.bot = null;
+  const tfSec = TF_SEC[cfg.tf];
+  const mk = new SimMarket(cfg.symbol, Date.UTC(2026, 9, 14, 8, 0, 0), 20261014);
+  const builder = new CandleBuilder(tfSec);
+  const dt = simTickStep(tfSec);
+  const n = Math.ceil((300 * tfSec) / dt);
+  for (let i = 0; i < n; i++) { const k = mk.step(dt); builder.push(k.t, k.p, k.v); }
+  S.builder = builder; S.market = mk; S.prevA = analyze(builder.candles);
+  $('log').innerHTML = '';
+  addLog('info', 'Prêt. Règle le budget, le marché et le timeframe, puis clique sur « Démarrer le bot ». Le graphique ci-dessus est un aperçu simulé.');
+  render();
+}
+
+/* ---------------- Journal ---------------- */
+function addLog(level, msg, t) {
+  const row = document.createElement('div');
+  const tm = document.createElement('time'); tm.textContent = tfmt(t || Date.now(), true);
+  const sp = document.createElement('span'); sp.className = level; sp.textContent = msg;
+  row.appendChild(tm); row.appendChild(sp);
+  const box = $('log'); box.insertBefore(row, box.firstChild);
+  while (box.children.length > 250) box.removeChild(box.lastChild);
+}
+
+/* ---------------- Cycle de vie ---------------- */
+function validate() {
+  if (IS_ARTIFACT && cfg.mode !== 'sim') return 'Cette version hébergée ne fonctionne qu\'en simulation. Ouvre le fichier autotrader.html pour le mode Papier.';
+  if (!(cfg.budget >= 5)) return 'Le budget minimum est de 5 USDT.';
+  if (cfg.mode === 'testnet' || cfg.mode === 'live') {
+    if (!$('apiKey').value.trim() || !$('apiSecret').value.trim()) return 'Renseigne la clé API et la clé secrète.';
+    if (cfg.mode === 'live' && !$('liveAck').checked) return 'Coche la case qui confirme que tu comprends les risques du mode réel.';
+  }
+  return null;
+}
+
+async function startSession() {
+  const err = validate();
+  if (err) { toast(err); return; }
+  cfg.apiKey = $('apiKey').value.trim(); cfg.apiSecret = $('apiSecret').value.trim();
+  const run = { ...cfg, env: cfg.mode };
+  S.run = run; S.lastTickT = 0; S.lastFrame = 0; S.procSince = 0;
+  const tfSec = TF_SEC[cfg.tf];
+  S.running = true; S.stopping = false; S.proc = false; S.pending = []; S.staleWarned = false; S.liveA = null; S.liveAt = 0; S.feedState = ''; S.lastTickAt = 0;
+  lockUI(true); $('go').textContent = 'Arrêter'; $('go').classList.add('stop'); $('go').disabled = false;
+  setStatus('warn', 'Connexion…');
+  $('log').innerHTML = '';
+  S.builder = new CandleBuilder(tfSec);
+  const hooks = { log: addLog, afterTrade: () => { refreshBalance(); } };
+  try {
+    if (cfg.mode === 'sim') {
+      S.broker = new SimBroker(run);
+      S.dt = simTickStep(tfSec);
+      S.market = new SimMarket(cfg.symbol, Date.now() - 300 * tfSec * 1000, (Date.now() & 0x7fffffff) || 7);
+      const n = Math.ceil((300 * tfSec) / S.dt);
+      for (let i = 0; i < n; i++) { const k = S.market.step(S.dt); S.builder.push(k.t, k.p, k.v); }
+      S.bot = new Bot(run, S.broker, hooks);
+      initBotFromHistory();
+      addLog('info', `Simulation démarrée : ${cfg.symbol}, ${cfg.market === 'futures' ? 'Futures ×' + cfg.leverage : 'Spot'}, bougies ${cfg.tf}, budget ${money(cfg.budget)} USDT.`);
+      S.acc = 0;
+      S.frameTimer = setInterval(simFrame, 250);
+    } else {
+      const paper = cfg.mode === 'paper';
+      S.broker = paper ? new PaperBroker(run) : new LiveBroker(run);
+      await S.broker.init(cfg.symbol);
+      const b = await S.broker.balance();
+      S.balance = paper ? null : b;
+      if (b.free < cfg.budget) throw new Error(`Solde USDT insuffisant : ${money(b.free)} disponible pour un budget de ${money(cfg.budget)}.`);
+      const need = S.broker.minBudget();
+      if (cfg.budget < need) throw new Error(`Budget trop faible pour ${cfg.symbol} en ${cfg.market === 'futures' ? 'Futures ×' + cfg.leverage : 'Spot'} : Binance impose au moins ${S.broker.minOrderUsd().toFixed(2)} USDT par ordre (quantité minimale ${S.broker.f.minQty}). Il faut au moins ${need.toFixed(2)} USDT${cfg.market === 'futures' ? ' avec ce levier. Monte le budget ou le levier, ou prends une paire moins chère (DOGEUSDT, XRPUSDT)' : ''}.`);
+      try {
+        S.builder.seed(await fetchWarmup(run));
+        addLog('info', `Historique chargé : ${S.builder.candles.length} bougies ${cfg.tf}.`);
+      } catch (e) { addLog('warn', 'Historique indisponible, échauffement en direct : ' + e.message); }
+      S.bot = new Bot(run, S.broker, hooks);
+      initBotFromHistory();
+      addLog('info', `${paper ? 'Mode Papier (prix Binance réels, ordres simulés)' : 'Bot connecté à Binance ' + (cfg.mode === 'live' ? 'RÉEL' : 'Testnet')} : ${cfg.symbol}, ${cfg.market === 'futures' ? 'Futures ×' + cfg.leverage : 'Spot'}, bougies ${cfg.tf}, budget ${money(cfg.budget)} USDT.`);
+      S.feed = new LiveFeed(run, (t, p, v) => { S.pending.push([t, p, v]); if (S.pending.length > 5000) S.pending.splice(0, S.pending.length - 2000); drain(); }, (st, msg) => {
+        if (st === S.feedState) return;
+        S.feedState = st;
+        if (st === 'ws') addLog('info', 'Flux de prix en direct (WebSocket) connecté.');
+        if (st === 'rest') addLog('warn', 'WebSocket indisponible : prix récupérés par requêtes toutes les secondes.');
+        if (st === 'error') addLog('danger', 'Impossible d\'obtenir les prix : ' + msg);
+      }, S.broker.offset);
+      S.feed.start();
+      S.drainTimer = setInterval(drain, 100);
+      if (!paper) {
+        if (cfg.market === 'futures') S.syncTimer = setInterval(syncPos, 5000);
+        S.balTimer = setInterval(refreshBalance, 60000);
+      }
+    }
+  } catch (e) {
+    addLog('danger', 'Démarrage impossible : ' + e.message);
+    const net = /Failed to fetch|NetworkError|Load failed/i.test(e.message);
+    toast(net ? 'Connexion à Binance bloquée par le navigateur. Ouvre le fichier autotrader.html depuis ton ordinateur.' : 'Démarrage impossible : ' + e.message);
+    await teardown();
+    return;
+  }
+  S.uiTimer = setInterval(render, 250);
+  S.stopBeat = startHeartbeat(beat);
+  try { if (navigator.wakeLock) S.wake = await navigator.wakeLock.request('screen'); } catch (e) { /* refusé */ }
+  if (window.innerWidth < 1000) $('kpis').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  render();
+}
+
+function initBotFromHistory() {
+  const a = analyze(S.builder.candles);
+  S.bot.a = a;
+  const last = S.builder.candles[S.builder.candles.length - 1];
+  if (last) { S.bot.lastPrice = last.c; S.bot.lastT = last.t; }
+  if (a.ready) {
+    S.bot.score = a.score; S.bot.prevScore = 0; S.bot.status = 'running';
+    S.bot.decision = { kind: 'wait', text: 'Le bot analyse le marché. Il décide à chaque fermeture de bougie ' + cfg.tf + '.' };
+  } else {
+    const missing = MIN_CANDLES - S.builder.candles.length, mins = Math.ceil((missing * TF_SEC[cfg.tf]) / 60);
+    S.bot.decision = { kind: 'wait', text: `Échauffement : ${S.builder.candles.length}/${MIN_CANDLES} bougies ${cfg.tf} disponibles. Le bot ne peut pas encore analyser, il lui faut environ ${mins} min de plus. Choisis un timeframe plus court pour démarrer plus vite.` };
+  }
+}
+
+async function handleTick(t, p, v) {
+  S.lastTickAt = Date.now();
+  if (cfg.mode !== 'sim' && S.lastTickT && t - S.lastTickT > Math.max(20000, 2 * TF_SEC[cfg.tf] * 1000) && !S.resyncing) {
+    S.resyncing = true;
+    try { S.builder.seed(await fetchWarmup(S.run)); addLog('warn', 'Trou dans les prix détecté (veille ou coupure) : historique rechargé.'); }
+    catch (e) { addLog('warn', 'Trou dans les prix et historique non rechargé : ' + e.message); }
+    finally { S.resyncing = false; }
+  }
+  S.lastTickT = t;
+  const closed = S.builder.push(t, p, v);
+  const bot = S.bot;
+  if (bot.lastPrice === null) { bot.lastPrice = p; bot.lastT = t; }
+  if (closed.length) await bot.onCandle(S.builder.candles);
+  await bot.onTick(t, p);
+}
+
+async function simFrame() {
+  if (S.proc || !S.running || S.stopping) return;
+  S.proc = true; S.procSince = Date.now();
+  const now = performance.now(), el = S.lastFrame ? Math.min(60, (now - S.lastFrame) / 1000) : 0.25; S.lastFrame = now;
+  try {
+    S.acc += cfg.speed * el;
+    let n = 0;
+    while (S.acc >= S.dt && n < 3000 && S.running && !S.stopping) {
+      S.acc -= S.dt; n++;
+      const k = S.market.step(S.dt);
+      await handleTick(k.t, k.p, k.v);
+    }
+  } catch (e) { addLog('danger', 'Erreur interne : ' + e.message); }
+  finally { S.proc = false; }
+}
+
+async function drain() {
+  if (S.proc || !S.running || S.stopping) return;
+  S.proc = true; S.procSince = Date.now();
+  try {
+    const q = S.pending.splice(0);
+    for (const [t, p, v] of q) { if (S.stopping) break; await handleTick(t, p, v); }
+    if (S.running && S.lastTickAt && Date.now() - S.lastTickAt > 15000 && !S.staleWarned) { S.staleWarned = true; addLog('warn', 'Aucun prix reçu depuis 15 s.'); }
+    if (Date.now() - S.lastTickAt < 5000) S.staleWarned = false;
+  } catch (e) { addLog('danger', 'Erreur interne : ' + e.message); }
+  finally { S.proc = false; }
+}
+
+async function syncPos() {
+  const b = S.bot;
+  if (!S.running || !b || !b.pos || b.busy || S.syncing) return;
+  if (Date.now() - (b.pos.wall || 0) < 4000) return;
+  S.syncing = true;
+  try {
+    const amt = await S.broker.positionAmt();
+    if (amt !== null && Math.abs(amt) < 1e-9 && b.pos && !b.busy) { await b.externalClose(); refreshBalance(); }
+  } catch (e) { /* nouvel essai au prochain cycle */ }
+  finally { S.syncing = false; }
+}
+
+async function refreshBalance() {
+  if (!S.broker || cfg.mode === 'sim' || cfg.mode === 'paper') return;
+  try { S.balance = await S.broker.balance(); } catch (e) { /* ignoré */ }
+}
+
+async function teardown() {
+  clearInterval(S.frameTimer); clearInterval(S.uiTimer); clearInterval(S.syncTimer); clearInterval(S.balTimer); clearInterval(S.drainTimer);
+  S.frameTimer = S.uiTimer = S.syncTimer = S.balTimer = S.drainTimer = null;
+  if (S.feed) { S.feed.stop(); S.feed = null; }
+  if (S.stopBeat) { S.stopBeat(); S.stopBeat = null; }
+  try { if (S.wake) { await S.wake.release(); } } catch (e) { /* rien */ }
+  S.wake = null; S.running = false; S.stopping = false;
+  lockUI(false);
+  $('go').textContent = 'Démarrer le bot'; $('go').classList.remove('stop'); $('go').disabled = false;
+  if (!S.bot) buildPreview();
+  render();
+}
+
+async function stopSession() {
+  if (!S.running || S.stopping) return;
+  S.stopping = true; $('go').disabled = true;
+  setStatus('warn', 'Arrêt…');
+  clearInterval(S.frameTimer); clearInterval(S.drainTimer);
+  if (S.feed) S.feed.stop();
+  for (let i = 0; i < 100 && S.proc; i++) await sleep(50);
+  if (S.bot) {
+    const had = !!S.bot.pos;
+    await S.bot.stop(cfg.closeOnStop);
+    if (S.bot.pos) addLog('danger', 'La position est restée ouverte. Ferme-la manuellement sur Binance' + (cfg.market === 'futures' ? ' (les stops posés sur Binance restent actifs).' : '.'));
+    else if (had && !cfg.closeOnStop) addLog('warn', 'Bot arrêté, position laissée ouverte.');
+  }
+  addLog('info', 'Bot arrêté.');
+  await teardown();
+}
+
+/* ---------------- Test de connexion ---------------- */
+async function testConnection() {
+  const out = $('connOut');
+  out.textContent = 'Test en cours…';
+  const key = $('apiKey').value.trim(), sec = $('apiSecret').value.trim();
+  if (!key || !sec) { out.textContent = 'Renseigne les deux clés.'; return; }
+  try {
+    const b = new LiveBroker({ ...cfg, env: cfg.mode, apiKey: key, apiSecret: sec });
+    await b.init(cfg.symbol, false);
+    const r = await b.checkKeys();
+    const need = b.minBudget();
+    r.messages.push(`Ordre minimum Binance sur ${cfg.symbol} : environ ${b.minOrderUsd().toFixed(2)} USDT (quantité min ${b.f.minQty}). Budget minimum avec ces réglages : ${need.toFixed(2)} USDT${cfg.budget < need ? ' (ton budget actuel est trop faible).' : '.'}`);
+    out.innerHTML = '';
+    r.messages.forEach((m) => { const d = document.createElement('div'); d.textContent = m; d.className = /DANGER|trop faible/.test(m) ? 'bad' : /^Clés valides|^Bien/.test(m) ? 'good' : ''; out.appendChild(d); });
+  } catch (e) {
+    const net = /Failed to fetch|NetworkError|Load failed/i.test(e.message);
+    out.innerHTML = '';
+    const d = document.createElement('div'); d.className = 'bad';
+    d.textContent = net ? 'Le navigateur n\'a pas pu joindre Binance. Ouvre le fichier autotrader.html depuis ton ordinateur (pas depuis une page hébergée) et vérifie ta connexion.' : 'Échec : ' + e.message;
+    out.appendChild(d);
+  }
+}
+
+/* ---------------- Horloge de secours ---------------- */
+function startHeartbeat(fn) {
+  try {
+    const w = new Worker(URL.createObjectURL(new Blob(['setInterval(function(){postMessage(0)},1000)'], { type: 'text/javascript' })));
+    w.onmessage = fn;
+    return () => w.terminate();
+  } catch (e) {
+    const iv = setInterval(fn, 1000);
+    return () => clearInterval(iv);
+  }
+}
+function beat() {
+  if (!S.running || S.stopping) return;
+  if (S.proc && S.procSince && Date.now() - S.procSince > 30000) {
+    S.proc = false; if (S.bot) S.bot.busy = false;
+    addLog('warn', 'Une opération bloquée (réponse de Binance trop longue) a été débloquée automatiquement.');
+  }
+  if (cfg.mode === 'sim') simFrame();
+  else { drain(); if (S.feed) S.feed.pollRest(); }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.running) { beat(); render(); } });
+
+/* ---------------- Rendu ---------------- */
+function setStatus(kind, text) {
+  $('status').className = 'pill ' + kind; $('statusTxt').textContent = text;
+}
+
+const STATUS_TXT = { warmup: ['warn', 'Échauffement'], running: ['ok', 'En marche'], paused_day: ['warn', 'Pause : limite du jour'], halted: ['err', 'Arrêt d\'urgence'], stopped: ['', 'Arrêté'] };
+const FACTORS = [['trend', 'Tendance (EMA)'], ['momentum', 'Momentum (MACD)'], ['rsi', 'RSI'], ['boll', 'Bollinger'], ['volume', 'Volume'], ['htf', 'Timeframe ×5']];
+
+function render() {
+  const bot = S.bot;
+  if (S.running && bot && bot.status === 'halted' && !S.stopping) { stopSession(); }
+  const price = bot && bot.lastPrice != null ? bot.lastPrice : (S.builder && S.builder.cur ? S.builder.cur.c : null);
+  if (S.running && bot && !S.stopping) { const st = STATUS_TXT[bot.status] || ['', bot.status]; setStatus(st[0], st[1]); }
+  else if (!S.running && !S.stopping) setStatus('', 'Arrêté');
+
+  const budget = bot ? bot.startBudget : cfg.budget;
+  const eq = bot && price != null ? bot.equity(price) : budget;
+  const pnl = eq - budget;
+  const st = bot ? bot.stats() : { n: 0, wins: 0, winRate: 0, profitFactor: 0 };
+  const dayPnl = bot && bot.dayKey != null ? eq - bot.dayStartEquity : 0;
+  $('kCap').textContent = money(eq);
+  $('kCapS').textContent = S.balance && cfg.mode !== 'sim' ? `Solde Binance : ${money(S.balance.total)}` : 'USDT';
+  setSigned('kPnl', pnl, `${signed(budget ? (pnl / budget) * 100 : 0)} %`, 'kPnlS');
+  setSigned('kDay', dayPnl, `${signed(budget ? (dayPnl / budget) * 100 : 0)} %`, 'kDayS');
+  $('kWin').textContent = st.n ? `${st.winRate.toFixed(0)} %` : '—';
+  $('kWinS').textContent = `${st.wins} sur ${st.n} trades`;
+  $('kPF').textContent = st.n ? (isFinite(st.profitFactor) ? st.profitFactor.toFixed(2) : '∞') : '—';
+  $('kPFS').textContent = st.n ? `R moyen ${signed(bot.stats().avgR)}` : 'gains ÷ pertes';
+  $('kDD').textContent = bot ? `${bot.maxDD.toFixed(1)} %` : '—';
+  $('kDDS').textContent = bot ? `arrêt à ${cfg.maxDD} %` : '';
+
+  const a = bot && bot.a ? bot.a : S.prevA;
+  $('chartTitle').textContent = `${cfg.symbol} · ${cfg.tf} · ${cfg.market === 'futures' ? 'Futures' : 'Spot'}`;
+  $('chartPrice').textContent = price != null ? fmtP(price) : '';
+  $('chartNote').textContent = bot ? (cfg.mode === 'sim' ? 'Prix simulés. Heure affichée : horloge de la simulation.' : cfg.mode === 'paper' ? 'Prix en direct de Binance. Ordres simulés.' : 'Prix en direct de Binance.') : 'Aperçu simulé : le bot n\'est pas démarré.';
+  drawChart();
+  renderLive(bot);
+  renderDecision(S.running && S.liveA && S.liveA.ready ? S.liveA : a, bot);
+  renderPosition(bot, price);
+  renderTrades(bot);
+  drawCurve(bot);
+}
+
+function renderLive(bot) {
+  const b = S.builder, bar = $('liveBar');
+  if (!S.running || !b || !bot) { bar.hidden = true; return; }
+  bar.hidden = false;
+  const live = cfg.mode !== 'sim';
+  const age = S.lastTickAt ? (Date.now() - S.lastTickAt) / 1000 : null;
+  let dot = 'wait', txt;
+  const a = age === null ? null : Math.round(age);
+  if (!live) { dot = 'ok'; txt = `Simulation en cours (×${cfg.speed})`; }
+  else if (a !== null && a < 10 && S.feedState === 'ws') { dot = 'ok'; txt = `Prix Binance en direct (WebSocket), dernier prix il y a ${a} s`; }
+  else if (a !== null && a < 10 && S.feedState === 'rest') { dot = 'ok'; txt = `Prix Binance par requêtes (WebSocket indisponible), dernier prix il y a ${a} s`; }
+  else if (S.feedState === 'error') { dot = 'bad'; txt = 'Aucun prix reçu : ' + (a === null ? 'connexion impossible' : `rien depuis ${a} s`); }
+  else if (a !== null) { dot = 'bad'; txt = `Aucun prix reçu depuis ${a} s`; }
+  else txt = 'Connexion au flux de prix…';
+  $('liveDot').className = 'dot ' + dot; $('liveFeed').textContent = txt;
+  const rem = b.cur && bot.lastT ? Math.max(0, (b.cur.t + b.ms - bot.lastT) / 1000) : null;
+  const mm = rem === null ? '—' : rem >= 60 ? `${Math.floor(rem / 60)} min ${String(Math.floor(rem % 60)).padStart(2, '0')} s` : `${Math.floor(rem)} s`;
+  $('liveNext').innerHTML = `Bougie ${cfg.tf} suivante dans <b>${mm}</b>`;
+  const n = b.candles.length;
+  $('liveCandles').innerHTML = n >= MIN_CANDLES ? `Historique <b>${n}</b> bougies` : `Échauffement <b>${n}/${MIN_CANDLES}</b> bougies`;
+  if (!S.liveAt || Date.now() - S.liveAt > 1500) {
+    S.liveAt = Date.now();
+    S.liveA = analyze(b.cur ? b.candles.concat([b.cur]) : b.candles);
+  }
+}
+
+function setSigned(id, val, sub, subId) {
+  const el = $(id); el.textContent = signed(val); el.className = 'v ' + cls(val); $(subId).textContent = sub;
+}
+
+function barFill(v, el) {
+  const w = Math.min(50, Math.abs(v) * 50);
+  el.style.left = (v >= 0 ? 50 : 50 - w) + '%'; el.style.width = w + '%';
+  el.className = 'g-fill ' + (v >= 0 ? 'up' : 'down');
+}
+
+let factorsBuilt = false;
+function renderDecision(a, bot) {
+  const thr = cfg.thr;
+  if (!factorsBuilt) {
+    $('factors').innerHTML = FACTORS.map(([k, l]) => `<div class="frow"><span>${l}</span><div class="fbar"><span class="g-mid"></span><span class="g-fill" id="f_${k}"></span></div><span class="fv" id="fv_${k}">0</span></div>`).join('');
+    factorsBuilt = true;
+  }
+  const ready = a && a.ready;
+  const score = ready ? a.score : 0;
+  $('scoreVal').textContent = (score > 0 ? '+' : '') + score;
+  $('scoreVal').className = 'scoreval ' + (score >= thr ? 'pos' : score <= -thr ? 'neg' : '');
+  barFill(score / 100, $('gFill'));
+  $('gThrL').style.left = (50 - thr / 2) + '%'; $('gThrR').style.left = (50 + thr / 2) + '%';
+  const d = bot ? bot.decision : { kind: 'wait', text: 'Le bot n\'est pas démarré. Ce score montre comment il lit le marché simulé.' };
+  const tagMap = { wait: ['En attente', ''], skip: ['Filtré', ''], hold: ['En position', 'hold'], halt: ['Arrêté', ''] };
+  let [tt, tc] = tagMap[d.kind] || ['', ''];
+  if (d.kind === 'wait' && ready && score >= thr) { tt = 'Signal achat'; tc = 'buy'; } else if (d.kind === 'wait' && ready && score <= -thr) { tt = 'Signal vente'; tc = 'sell'; }
+  $('scoreTag').textContent = tt; $('scoreTag').className = 'tag ' + tc;
+  $('dText').textContent = d.text;
+  if (ready) {
+    $('dRegime').textContent = `Régime : ${a.regime}` + (S.running ? ' · score en direct' : '');
+    $('dMeta').innerHTML = `<span>ADX <b>${a.adx.toFixed(0)}</b></span><span>RSI <b>${a.rsi.toFixed(0)}</b></span><span>ATR <b>${a.atrPct.toFixed(2)} %</b></span><span>Volume <b>×${a.vr.toFixed(1)}</b></span><span>Seuil <b>±${thr}</b></span>`;
+    FACTORS.forEach(([k]) => {
+      const v = (k === 'htf' && !a.htfReady) ? 0 : a.parts[k];
+      barFill(v, $('f_' + k)); $('fv_' + k).textContent = (k === 'htf' && !a.htfReady) ? 'n/d' : (v >= 0 ? '+' : '') + Math.round(v * 100);
+    });
+  } else {
+    $('dRegime').textContent = ''; $('dMeta').textContent = '';
+    FACTORS.forEach(([k]) => { barFill(0, $('f_' + k)); $('fv_' + k).textContent = '0'; });
+  }
+}
+
+function renderPosition(bot, price) {
+  const box = $('posBox');
+  $('closeNow').hidden = !(S.running && bot && bot.pos);
+  if (!bot || !bot.pos) {
+    $('posNote').textContent = '';
+    box.innerHTML = '<p class="empty">Aucune position ouverte. Le bot attend un signal assez net.</p>';
+    return;
+  }
+  const q = bot.pos, p = price != null ? price : q.entry, un = q.dir * (p - q.entry) * q.qty;
+  const pct = (un / q.locked) * 100;
+  $('posNote').textContent = `${q.bars} / ${cfg.maxBars} bougies`;
+  const side = q.dir > 0 ? (bot.fut ? 'LONG' : 'ACHAT') : 'SHORT';
+  box.innerHTML = `<div class="posgrid">
+    <div><span>Sens</span><b class="${q.dir > 0 ? 'pos' : 'neg'}">${side}${bot.fut ? ' ×' + cfg.leverage : ''}</b></div>
+    <div><span>Résultat latent</span><b class="${cls(un)}">${signed(un)} USDT (${signed(pct, 1)} %)</b></div>
+    <div><span>Entrée</span><b>${fmtP(q.entry)}</b></div>
+    <div><span>Prix actuel</span><b>${fmtP(p)}</b></div>
+    <div><span>Stop</span><b class="neg">${fmtP(q.sl)}${q.trailing ? ' (suiveur)' : q.be ? ' (point mort)' : ''}</b></div>
+    <div><span>Objectif</span><b class="pos">${fmtP(q.tp)}</b></div>
+    <div><span>Taille</span><b>${money(q.notional)} USDT</b></div>
+    <div><span>${bot.fut ? 'Liquidation' : 'Capital engagé'}</span><b>${bot.fut ? fmtP(q.liq) : money(q.locked) + ' USDT'}</b></div>
+  </div>`;
+}
+
+let tradesSig = '';
+function renderTrades(bot) {
+  const t = bot ? bot.trades : [];
+  const sig = t.length + ':' + (bot ? bot.status : '');
+  if (sig === tradesSig) return; tradesSig = sig;
+  $('tradesNote').textContent = t.length ? `${t.length} au total, les 40 derniers sont affichés` : '';
+  if (!t.length) { $('tradesBody').innerHTML = '<tr><td class="txt" colspan="7">Aucun trade pour le moment.</td></tr>'; return; }
+  $('tradesBody').innerHTML = t.slice(-40).reverse().map((x) => `<tr>
+    <td>${tfmt(x.t1, true)}</td><td class="side ${x.side > 0 ? 'pos' : 'neg'}">${x.side > 0 ? (cfg.market === 'futures' ? 'LONG' : 'ACHAT') : 'SHORT'}</td>
+    <td>${fmtP(x.entry)}</td><td>${fmtP(x.exit)}</td><td class="${cls(x.pnl)}">${signed(x.pnl)} USDT</td><td class="${cls(x.r)}">${signed(x.r)}</td><td class="txt">${x.reason}</td></tr>`).join('');
+}
+
+/* ---------------- Graphiques ---------------- */
+function theme() {
+  const cs = getComputedStyle(document.documentElement);
+  const g = (n) => cs.getPropertyValue(n).trim();
+  return { up: g('--up'), down: g('--down'), fg: g('--fg'), muted: g('--muted'), grid: g('--grid'), accent: g('--accent'), surface: g('--surface'), line: g('--line'), warn: g('--warn') };
+}
+
+function fitCanvas(cv) {
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (!W || !H) return null;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  return { ctx, W, H };
+}
+
+function drawChart() {
+  const f = fitCanvas($('chart')); if (!f || !S.builder) return;
+  const { ctx, W, H } = f, c = theme();
+  const b = S.builder, all = b.candles.concat(b.cur ? [b.cur] : []);
+  if (all.length < 2) return;
+  const padL = 6, padR = 70, padT = 10, padB = 22, cw = W - padL - padR, ch = H - padT - padB;
+  const slot = W < 520 ? 6 : 8, n = Math.max(20, Math.floor(cw / slot)), vis = all.slice(-n);
+  const closes = all.slice(-(n + 60)).map((x) => x.c);
+  const e9 = emaSeries(closes, 9).slice(-vis.length), e21 = emaSeries(closes, 21).slice(-vis.length);
+  const bot = S.bot, pos = bot && bot.pos;
+  let min = Infinity, max = -Infinity;
+  vis.forEach((x) => { if (x.l < min) min = x.l; if (x.h > max) max = x.h; });
+  if (pos) { [pos.sl, pos.tp, pos.entry].forEach((v) => { if (v < min) min = v; if (v > max) max = v; }); }
+  const pad = (max - min) * 0.06 || max * 0.001; min -= pad; max += pad;
+  const y = (p) => padT + ch * (1 - (p - min) / (max - min));
+  const off = cw - vis.length * slot;
+  const x = (i) => padL + off + i * slot + slot / 2;
+  ctx.font = '11px ' + 'IBM Plex Mono, ui-monospace, monospace'; ctx.textBaseline = 'middle';
+  for (let i = 0; i <= 5; i++) {
+    const p = min + ((max - min) * i) / 5, yy = y(p);
+    ctx.strokeStyle = c.grid; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(W - padR, yy); ctx.stroke();
+    ctx.fillStyle = c.muted; ctx.textAlign = 'left'; ctx.fillText(fmtP(p), W - padR + 6, yy);
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const step = Math.max(1, Math.floor(vis.length / 6)), sec = TF_SEC[cfg.tf] < 60;
+  for (let i = vis.length - 1; i >= 0; i -= step) { ctx.fillStyle = c.muted; ctx.fillText(tfmt(vis[i].t, sec), Math.min(x(i), W - padR - 20), H - 6); }
+  ctx.textBaseline = 'middle';
+  const bw = Math.max(2, slot - 3);
+  vis.forEach((k, i) => {
+    const col = k.c >= k.o ? c.up : c.down, xx = x(i);
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(xx, y(k.h)); ctx.lineTo(xx, y(k.l)); ctx.stroke();
+    const yo = y(k.o), yc = y(k.c); ctx.fillRect(xx - bw / 2, Math.min(yo, yc), bw, Math.max(1, Math.abs(yo - yc)));
+  });
+  const line = (arr, col) => { ctx.strokeStyle = col; ctx.lineWidth = 1.3; ctx.beginPath(); arr.forEach((v, i) => { if (i) ctx.lineTo(x(i), y(v)); else ctx.moveTo(x(i), y(v)); }); ctx.stroke(); };
+  ctx.globalAlpha = 0.9; line(e9, c.accent); line(e21, c.warn); ctx.globalAlpha = 1;
+  const hl = (p, col, label, dash) => {
+    const yy = y(p); ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.setLineDash(dash || [5, 4]); ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(W - padR, yy); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = col; ctx.textAlign = 'left'; ctx.fillRect(W - padR + 2, yy - 8, padR - 4, 16);
+    ctx.fillStyle = c.surface; ctx.fillText(label, W - padR + 5, yy);
+  };
+  if (pos) { hl(pos.entry, c.muted, fmtP(pos.entry)); hl(pos.sl, c.down, fmtP(pos.sl)); hl(pos.tp, c.up, fmtP(pos.tp)); }
+  const lastP = vis[vis.length - 1].c; hl(lastP, c.fg, fmtP(lastP), [2, 3]);
+  if (bot) {
+    const t0 = vis[0].t, ms = b.ms;
+    bot.markers.forEach((m) => {
+      if (m.t < t0) return;
+      const i = Math.min(vis.length - 1, Math.floor((m.t - t0) / ms)), xx = x(i), yy = y(m.p);
+      if (m.type === 'exit') { ctx.fillStyle = m.win ? c.up : c.down; ctx.strokeStyle = c.surface; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(xx, yy, 4.5, 0, 6.3); ctx.fill(); ctx.stroke(); }
+      else {
+        const up = m.type === 'buy'; ctx.fillStyle = up ? c.up : c.down; ctx.strokeStyle = c.surface; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        if (up) { ctx.moveTo(xx, yy - 3); ctx.lineTo(xx - 6, yy + 9); ctx.lineTo(xx + 6, yy + 9); } else { ctx.moveTo(xx, yy + 3); ctx.lineTo(xx - 6, yy - 9); ctx.lineTo(xx + 6, yy - 9); }
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+    });
+  }
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = c.accent; ctx.fillText('EMA 9', padL + 4, padT + 10);
+  ctx.fillStyle = c.warn; ctx.fillText('EMA 21', padL + 52, padT + 10);
+}
+
+function drawCurve(bot) {
+  const f = fitCanvas($('curve')); if (!f) return;
+  const { ctx, W, H } = f, c = theme();
+  const base = bot ? bot.startBudget : cfg.budget;
+  const pts = bot ? bot.curve.map((p) => p.e) : [];
+  if (bot && S.builder && bot.lastPrice != null) pts.push(bot.equity(bot.lastPrice));
+  if (pts.length < 2) {
+    ctx.fillStyle = c.muted; ctx.font = '12px IBM Plex Sans, system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.fillText('La courbe apparaît après quelques bougies.', 0, H / 2); return;
+  }
+  const pad = 6; let min = Math.min(base, ...pts), max = Math.max(base, ...pts);
+  if (max - min < base * 0.002) { max += base * 0.001; min -= base * 0.001; }
+  const y = (v) => pad + (H - 2 * pad) * (1 - (v - min) / (max - min)), x = (i) => (W * i) / (pts.length - 1);
+  ctx.strokeStyle = c.muted; ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, y(base)); ctx.lineTo(W, y(base)); ctx.stroke(); ctx.setLineDash([]);
+  const up = pts[pts.length - 1] >= base;
+  ctx.strokeStyle = up ? c.up : c.down; ctx.lineWidth = 1.8; ctx.beginPath();
+  pts.forEach((v, i) => { if (i) ctx.lineTo(x(i), y(v)); else ctx.moveTo(x(i), y(v)); }); ctx.stroke();
+  ctx.fillStyle = up ? c.up : c.down; ctx.beginPath(); ctx.arc(x(pts.length - 1) - 2, y(pts[pts.length - 1]), 3.5, 0, 6.3); ctx.fill();
+}
+
+/* ---------------- Clés mémorisées (option) ---------------- */
+function storeKeys() {
+  try {
+    if ($('rememberKeys').checked && $('apiKey').value.trim() && $('apiSecret').value.trim()) {
+      localStorage.setItem('autotrader.keys', JSON.stringify({ k: $('apiKey').value.trim(), s: $('apiSecret').value.trim() }));
+    }
+  } catch (e) { /* stockage indisponible */ }
+}
+try {
+  const kk = JSON.parse(localStorage.getItem('autotrader.keys') || 'null');
+  if (kk && kk.k && kk.s) { $('apiKey').value = kk.k; $('apiSecret').value = kk.s; $('rememberKeys').checked = true; }
+} catch (e) { /* ignoré */ }
+$('rememberKeys').addEventListener('change', () => {
+  try {
+    if ($('rememberKeys').checked) { storeKeys(); toast('Clés mémorisées sur cet ordinateur.'); }
+    else { localStorage.removeItem('autotrader.keys'); toast('Clés effacées de cet ordinateur.'); }
+  } catch (e) { /* ignoré */ }
+});
+$('apiKey').addEventListener('input', storeKeys); $('apiSecret').addEventListener('input', storeKeys);
+
+/* ---------------- Démarrage ---------------- */
+buildTfChips();
+bindControls();
+writeNums();
+refreshControls();
+buildPreview();
+window.addEventListener('resize', () => { drawChart(); drawCurve(S.bot); });
+if (window.matchMedia) { try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => render()); } catch (e) { /* ancien navigateur */ } }
+})();
+
+</script>
+
+</body>
+</html>
