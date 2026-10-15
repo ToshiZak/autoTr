@@ -207,6 +207,15 @@ td.txt { font-family: var(--font-body); }
 .toast[hidden] { display: none; }
 .posActions{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.recalc{background:transparent;color:inherit;border:1px solid currentColor;border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;opacity:.85}.closeNow{background:#b3261e;color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;cursor:pointer}.closeNow:disabled{opacity:.5;cursor:default}
 .riskScale{display:flex;justify-content:space-between;font-size:11px;opacity:.7;margin-top:2px}
+.setups{display:flex;flex-direction:column;gap:7px}
+.srow{display:flex;align-items:center;gap:9px;font-size:13px}
+.srow .sname{flex:0 0 auto;min-width:138px}
+.srow .sbar{flex:1 1 auto;height:7px;border-radius:4px;background:var(--surface2);overflow:hidden;position:relative}
+.srow .sfill{display:block;height:100%;border-radius:4px;background:var(--muted);transition:width .25s}
+.srow.on .sfill{background:#16a34a}.srow.short .sfill{background:#b3261e}
+.srow .sq{flex:0 0 auto;width:62px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.srow.on .sq{color:inherit;font-weight:600}
+.srow .smin{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--muted);opacity:.65}
 </style>
 
 
@@ -232,6 +241,7 @@ td.txt { font-family: var(--font-body); }
       <section class="grp">
         <h2>Mode</h2>
         <div class="seg" id="segMode" role="group" aria-label="Mode">
+          <button type="button" data-v="sim" id="simBtn" hidden>Simulation</button>
           <button type="button" data-v="paper">Papier</button>
           <button type="button" data-v="live">Réel</button>
         </div>
@@ -288,19 +298,18 @@ td.txt { font-family: var(--font-body); }
           <summary>Réglages avancés</summary>
           <div class="advgrid">
             <div class="row2">
-              <div class="field"><label for="thr">Score minimum</label><input id="thr" type="number" step="1"></div>
+              <div class="field"><label for="minQ">Qualité minimale du setup</label><input id="minQ" type="number" step="1" min="10" max="95"></div>
               <div class="field"><label for="alloc">Part du budget engagée (%)</label><input id="alloc" type="number" step="5"></div>
             </div>
             <div class="row2">
               <div class="field"><label for="riskPct">Perte max par trade (%)</label><input id="riskPct" type="number" step="0.5"></div>
-              <div class="field"><label for="slAtr">Stop (× ATR)</label><input id="slAtr" type="number" step="0.1"></div>
+              <div class="field"><label for="trailAtr">Stop suiveur (× ATR)</label><input id="trailAtr" type="number" step="0.1"></div>
             </div>
             <div class="row2">
               <div class="field"><label for="gainTarget">Gain visé (% de la marge)</label><input id="gainTarget" type="number" step="0.5" min="0.5"></div>
-              <div class="field"><label for="trailAtr">Trailing (× ATR)</label><input id="trailAtr" type="number" step="0.1"></div>
+              <div class="field"><label for="maxBars">Durée max (bougies)</label><input id="maxBars" type="number" step="1"></div>
             </div>
             <div class="row2">
-              <div class="field"><label for="maxBars">Durée max (bougies)</label><input id="maxBars" type="number" step="1"></div>
               <div class="field"><label for="maxDailyLoss">Perte max / jour (%)</label><input id="maxDailyLoss" type="number" step="0.5"></div>
             </div>
             <div class="row2">
@@ -315,12 +324,14 @@ td.txt { font-family: var(--font-body); }
             <label class="check"><input type="checkbox" id="dailyLossOn"><span>Activer la limite de perte journalière (le bot arrête de prendre de nouveaux trades quand elle est atteinte)</span></label>
             <label class="check"><input type="checkbox" id="runOn"><span>Laisser courir au-delà du gain visé si la tendance continue (le stop se place alors à 80 % du gain visé)</span></label>
             <label class="check"><input type="checkbox" id="reverse"><span>Inverser la position si le signal se retourne contre un trade perdant et que le gain visé couvre les doubles frais</span></label>
-            <label class="check"><input type="checkbox" id="entryFilter"><span>Filtre d'entrée : refuser une entrée contre la dernière bougie, contre une mèche de rejet ou sans direction (ADX faible)</span></label>
-            <label class="check"><input type="checkbox" id="structStop"><span>Stop au-delà du dernier creux ou sommet (hors du bruit du marché)</span></label>
-            <label class="check"><input type="checkbox" id="trailing"><span>Stop suiveur (trailing) après +1R</span></label>
+            <p class="hint" style="margin-top:4px"><b>Figures que le bot sait trader</b> (il n'entre que si l'une d'elles est présente) :</p>
+            <label class="check"><input type="checkbox" id="s_pullback"><span><b>Repli en tendance</b> : tendance nette (EMA 9/21/50 alignées, dans le sens de l'EMA 200), le prix respire vers les moyennes, le VWAP ou un niveau de Fibonacci, puis une bougie repart dans le sens de la tendance. Stop sous le creux du repli.</span></label>
+            <label class="check"><input type="checkbox" id="s_breakout"><span><b>Cassure de compression</b> : 8 bougies resserrées (bandes de Bollinger comprimées), puis clôture au-delà de la boîte avec du volume. Stop au milieu de la boîte.</span></label>
+            <label class="check"><input type="checkbox" id="s_fade"><span><b>Rejet en range</b> : marché sans tendance, le prix touche une extrémité et se fait refuser par une mèche. Objectif : le milieu du range.</span></label>
+            <label class="check"><input type="checkbox" id="s_impulse"><span><b>Impulsion</b> : grosse bougie (≥ 0,9 ATR) avec volume ×1,6 qui casse les 10 dernières bougies, MACD dans le sens. Stop sous la bougie.</span></label>
+            <label class="check"><input type="checkbox" id="trailing"><span>Stop suiveur : une fois 80 % du gain visé atteint, le stop suit le prix</span></label>
             <label class="check" id="shortRow"><input type="checkbox" id="allowShort"><span>Autoriser les ventes à découvert (Futures)</span></label>
-            <label class="check"><input type="checkbox" id="htfGate"><span>Exiger l'accord du timeframe supérieur (×5)</span></label>
-            <label class="check"><input type="checkbox" id="confirmCandle"><span>Confirmer le signal sur 2 bougies</span></label>
+            <label class="check"><input type="checkbox" id="htfGate"><span>Refuser un repli, une cassure ou une impulsion si le timeframe supérieur (×5) va franchement dans l'autre sens</span></label>
             <label class="check"><input type="checkbox" id="costFilter"><span>Ignorer les trades dont l'objectif ne couvre pas les frais</span></label>
             <label class="check"><input type="checkbox" id="closeOnStop"><span>Fermer la position quand j'arrête le bot</span></label>
             <p class="hint" id="costHint"></p>
@@ -358,10 +369,10 @@ td.txt { font-family: var(--font-body); }
         <div class="card">
           <div class="card-h"><h2>Décision du bot</h2><span class="note" id="dRegime"></span></div>
           <div class="scorehead"><span class="scoreval" id="scoreVal">0</span><span class="tag" id="scoreTag">En attente</span></div>
-          <div class="gauge" id="gauge" aria-hidden="true"><span class="g-fill" id="gFill"></span><span class="g-mid"></span><span class="g-thr" id="gThrL"></span><span class="g-thr" id="gThrR"></span></div>
+          <div class="gauge" id="gauge" aria-hidden="true"><span class="g-fill" id="gFill"></span><span class="g-mid"></span></div>
           <p class="dtext" id="dText"></p>
           <div class="meta" id="dMeta"></div>
-          <div class="factors" id="factors" style="margin-top:14px"></div>
+          <div class="setups" id="setups" style="margin-top:14px"></div>
         </div>
         <div class="card">
           <div class="card-h"><h2>Position</h2><span class="note" id="posNote"></span></div>
@@ -416,27 +427,27 @@ const PROFILES = {
    repos plus court) pour faire plus de trades, mais le seuil ne descend jamais sous 30 et les filtres de qualité restent actifs.
    Repères : 50 = prudent, 100 = équilibré, 150 = agressif. */
 const RISK_ANCHORS = [
-  [0,   { thr: 52, alloc: 5,   riskPct: 0.5, slAtr: 2.0, trailAtr: 2.0, maxBars: 60 }],
-  [50,  { thr: 44, alloc: 30,  riskPct: 3,   slAtr: 1.8, trailAtr: 1.9, maxBars: 55 }],
-  [100, { thr: 38, alloc: 60,  riskPct: 8,   slAtr: 1.6, trailAtr: 1.7, maxBars: 48 }],
-  [150, { thr: 34, alloc: 100, riskPct: 25,  slAtr: 1.5, trailAtr: 1.5, maxBars: 42 }],
-  [200, { thr: 30, alloc: 100, riskPct: 50,  slAtr: 1.4, trailAtr: 1.4, maxBars: 40 }],
+  [0,   { minQ: 74, alloc: 5,   riskPct: 0.5, slAtr: 2.0, trailAtr: 2.0, maxBars: 60 }],
+  [50,  { minQ: 64, alloc: 30,  riskPct: 3,   slAtr: 1.8, trailAtr: 1.9, maxBars: 55 }],
+  [100, { minQ: 54, alloc: 60,  riskPct: 8,   slAtr: 1.6, trailAtr: 1.7, maxBars: 48 }],
+  [150, { minQ: 46, alloc: 100, riskPct: 25,  slAtr: 1.5, trailAtr: 1.5, maxBars: 42 }],
+  [200, { minQ: 38, alloc: 100, riskPct: 50,  slAtr: 1.4, trailAtr: 1.4, maxBars: 40 }],
 ];
 function riskParams(level) {
   const r = Math.max(0, Math.min(200, +level || 0));
   let i = 0; while (i < RISK_ANCHORS.length - 2 && r > RISK_ANCHORS[i + 1][0]) i++;
   const [r0, a] = RISK_ANCHORS[i], [r1, b] = RISK_ANCHORS[i + 1], k = (r - r0) / (r1 - r0), out = {};
   for (const key of Object.keys(a)) out[key] = a[key] + (b[key] - a[key]) * k;
-  out.thr = Math.round(out.thr); out.alloc = Math.round(out.alloc); out.riskPct = +out.riskPct.toFixed(1);
+  out.minQ = Math.round(out.minQ); out.alloc = Math.round(out.alloc); out.riskPct = +out.riskPct.toFixed(1);
   out.slAtr = +out.slAtr.toFixed(2); out.trailAtr = +out.trailAtr.toFixed(2); out.maxBars = Math.round(out.maxBars);
   // sélectivité : moins de conditions d'entrée quand le risque monte
   out.htfGate = r < 80;
-  out.confirmCandle = r < 120;
   out.cooldown = r < 60 ? 3 : r < 120 ? 2 : r < 170 ? 1 : 0;
   return out;
 }
 
 const DEFAULTS = {
+  s_pullback: true, s_breakout: true, s_fade: true, s_impulse: true,
   mode: 'paper', market: 'futures', leverage: 5, symbol: 'BTCUSDT', budget: 1000, tf: '5m',
   riskLevel: 100, ...riskParams(100),
   gainTarget: 5,        // gain visé, en % de la marge engagée (ROI)
@@ -444,12 +455,15 @@ const DEFAULTS = {
   runOn: true,          // laisser courir au-delà du gain visé si le marché continue
   reverse: true,        // inverser la position si le signal se retourne et que ça vaut les doubles frais
   dailyLossOn: true, maxDailyLoss: 4, maxDD: 20, trailing: true, allowShort: true,
-  costFilter: true, entryFilter: true, structStop: true, speed: 20, slip: 0.0002,
+  costFilter: true, speed: 20, slip: 0.0002,
   apiKey: '', apiSecret: '',
 };
 
 /* Verrouillage des frais : le stop passe au point mort quand le gain atteint 3 x les frais A/R (et au moins 0,5 ATR).
    Mesuré en simulation : verrouiller plus tôt fait sortir sur le bruit et coûte cher. */
+/* Seuils sur le biais (-100..+100) pour juger un retournement contre une position ouverte. */
+const BIAS_REV = 45, BIAS_SOFT = 22;
+
 const LK = { fm: 3, fa: 0.5, steps: [] };
 
 function feeRate(market) { return market === 'futures' ? 0.0005 : 0.001; }
@@ -540,7 +554,159 @@ function aggregate(cs, N) {
 
 /* ---------------- Analyse : score -100 .. +100 ---------------- */
 
-const WEIGHTS = { trend: 30, momentum: 25, rsi: 15, boll: 15, volume: 10, htf: 25 };
+
+/* Retracement de Fibonacci : repère la dernière jambe d'impulsion (creux -> sommet en tendance haussière, sommet -> creux en
+   baissière) à partir de pivots confirmés (3 bougies de chaque côté), et regarde si le prix est revenu sur un niveau
+   38,2 / 50 / 61,8 % avec une bougie de reprise dans le sens de la tendance. */
+const FIB_LEVELS = [0.382, 0.5, 0.618];
+function pivotAt(w, i, k, hi) {
+  for (let j = i - k; j <= i + k; j++) { if (j === i) continue; if (hi ? w[j].h > w[i].h : w[j].l < w[i].l) return false; }
+  return true;
+}
+function fibInfo(w, atr, price, dir) {
+  const n = w.length, k = 3, from = Math.max(k, n - 120);
+  if (!dir || !(atr > 0)) return { ok: false };
+  const find = (hi, before) => { for (let i = Math.min(before, n - 1 - k); i >= from; i--) if (pivotAt(w, i, k, hi)) return i; return -1; };
+  const last = w[n - 1];
+  let a, b;                                         // a = début de la jambe, b = fin de la jambe (extrême)
+  if (dir > 0) { b = find(true, n - 1 - k); if (b < 0) return { ok: false }; a = find(false, b - 1); }
+  else { b = find(false, n - 1 - k); if (b < 0) return { ok: false }; a = find(true, b - 1); }
+  if (a < 0) return { ok: false };
+  const top = dir > 0 ? w[b].h : w[a].h, bot = dir > 0 ? w[a].l : w[b].l, leg = top - bot;
+  if (leg < 2.5 * atr || n - 1 - b > 45) return { ok: false };
+  // extrême du repli depuis le sommet (ou le creux) de la jambe
+  let pull = dir > 0 ? Infinity : -Infinity;
+  for (let i = b + 1; i < n; i++) pull = dir > 0 ? Math.min(pull, w[i].l) : Math.max(pull, w[i].h);
+  if (!isFinite(pull)) pull = dir > 0 ? last.l : last.h;
+  const r = dir > 0 ? (top - price) / leg : (price - bot) / leg;       // 0 = au sommet de la jambe, 1 = à son pied
+  const rPull = dir > 0 ? (top - pull) / leg : (pull - bot) / leg;     // profondeur maximale du repli
+  if (rPull > 0.82 || rPull < 0.3) return { ok: false, r, leg };       // trop profond (tendance cassée) ou pas de vrai repli
+  const lvl = FIB_LEVELS.reduce((best, l) => (Math.abs(rPull - l) < Math.abs(rPull - best) ? l : best), FIB_LEVELS[0]);
+  const near = Math.abs(rPull - lvl) * leg <= Math.max(0.07 * leg, 0.35 * atr);
+  const confirm = dir * (last.c - last.o) > 0 && dir * (last.c - w[n - 2].c) > 0;   // bougie de reprise dans le sens de la tendance
+  const ok = near && confirm && r < rPull;                                          // le prix repart déjà de son point bas du repli
+  return { ok, near, confirm, dir, lvl, r, rPull, leg, pull, top, bot, strength: ok ? clamp(1 - Math.abs(rPull - lvl) / 0.1, 0.4, 1) : 0 };
+}
+
+/* Structure du marché : compare les deux derniers sommets et les deux derniers creux confirmés.
+   +1 = sommets et creux de plus en plus hauts (tendance haussière), -1 = l'inverse, 0 = pas de structure claire. */
+function structDir(w, k = 3) {
+  const hi = [], lo = [], n = w.length;
+  for (let i = n - 1 - k; i >= Math.max(k, n - 90); i--) {
+    if (hi.length < 2 && pivotAt(w, i, k, true)) hi.push(w[i].h);
+    if (lo.length < 2 && pivotAt(w, i, k, false)) lo.push(w[i].l);
+    if (hi.length >= 2 && lo.length >= 2) break;
+  }
+  if (hi.length < 2 || lo.length < 2) return 0;
+  if (hi[0] > hi[1] && lo[0] > lo[1]) return 1;
+  if (hi[0] < hi[1] && lo[0] < lo[1]) return -1;
+  return 0;
+}
+
+/* ---------------- Playbook : les figures que le bot sait trader ----------------
+   Chaque setup est une idée de trade complète : des conditions de marché, une bougie qui déclenche,
+   et l'endroit où placer le stop. Il n'y a plus de moyenne entre indicateurs : un setup valable
+   se suffit à lui-même, et sa « qualité » (0 à 100) dit à quel point l'exemple est propre. */
+function findSetups(a, w) {
+  const out = [];
+  const { price, atr, adx, rsi, e9, e21, e50, e200, e200Ok, vwap, vwapOk, pb, vr, htf, htfReady, fib, bwPct, structure, expanding, hist, low3, high3 } = a;
+  if (!(atr > 0)) return out;
+  const n = w.length, last = w[n - 1], prev = w[n - 2];
+  const body = last.c - last.o, rng = Math.max(last.h - last.l, 1e-12);
+  const upW = last.h - Math.max(last.o, last.c), dnW = Math.min(last.o, last.c) - last.l;
+  const hiOf = (k, skip = 1) => Math.max(...w.slice(n - k - skip, n - skip).map((x) => x.h));
+  const loOf = (k, skip = 1) => Math.min(...w.slice(n - k - skip, n - skip).map((x) => x.l));
+  const push = (o) => { o.quality = Math.round(clamp(o.quality, 0, 100)); if (o.quality > 0) out.push(o); };
+  const htfBonus = (side, up, down) => (htfReady ? (htf * side > 0.3 ? up : htf * side < -0.3 ? -down : 0) : 0);
+
+  // --- 1. Repli en tendance : la figure de base du scalpeur. On achète une respiration dans une tendance établie.
+  for (const side of [1, -1]) {
+    const stack = side > 0 ? e9 > e21 && e21 > e50 : e9 < e21 && e21 < e50;
+    if (!stack || adx < 16) continue;
+    if (e200Ok && side * (price - e200) < -0.5 * atr) continue;   // à contre-courant du fond de marché (EMA 200)
+    const zHi = Math.max(e21, e50), zLo = Math.min(e21, e50);
+    const touched = side > 0 ? low3 <= zHi + 0.35 * atr : high3 >= zLo - 0.35 * atr;
+    const vwapTouch = vwapOk && (side > 0 ? low3 <= vwap + 0.25 * atr && price > vwap : high3 >= vwap - 0.25 * atr && price < vwap);
+    const fibOk = !!(fib && fib.ok && fib.dir === side);
+    if (!touched && !vwapTouch && !fibOk) continue;
+    if (!(side * body > 0 && side * (last.c - prev.c) > 0)) continue;  // bougie de reprise dans le sens de la tendance
+    const ext = (side * (price - e21)) / atr;
+    if (ext > 1.8) continue;                                           // le prix est déjà reparti trop loin
+    let q = 44 + clamp((adx - 16) / 22, 0, 1) * 15 + htfBonus(side, 10, 18);
+    if (fibOk) q += 12 * fib.strength;
+    if (vwapTouch) q += 6;
+    if (structure === side) q += 8;
+    if (vr >= 1.1) q += 5;
+    if (side * body > 0.4 * rng) q += 5;
+    q -= clamp(ext, 0, 1.8) * 6;
+    const base = side > 0 ? Math.min(low3, zLo) : Math.max(high3, zHi);
+    push({
+      key: 'pullback', name: 'Repli en tendance', side, quality: q,
+      stopRef: base - side * 0.25 * atr,
+      why: `tendance ${side > 0 ? 'haussière' : 'baissière'} (EMA 9/21/50 alignées, ADX ${adx.toFixed(0)}), repli ${fibOk ? `sur le niveau Fibonacci ${(fib.lvl * 100).toFixed(1)} %` : vwapTouch ? 'sur le VWAP' : 'vers les moyennes mobiles'} puis bougie de reprise`,
+    });
+  }
+
+  // --- 2. Cassure de compression : le marché se resserre, puis sort de sa boîte avec du volume.
+  {
+    const K = 8, hh = hiOf(K), ll = loOf(K), width = hh - ll;
+    const tight = width < 2.2 * atr || bwPct <= 0.25;
+    for (const side of [1, -1]) {
+      const beyond = side > 0 ? last.c - hh : ll - last.c;
+      if (!tight || beyond <= 0.05 * atr || side * body <= 0) continue;
+      let q = 40 + clamp((2.2 * atr - width) / (1.4 * atr), 0, 1) * 14 + clamp((vr - 1) / 1.2, 0, 1) * 16
+        + clamp(Math.abs(body) / (0.8 * atr), 0, 1) * 8 + htfBonus(side, 8, 14);
+      if (bwPct <= 0.2) q += 6;
+      if (adx < 14) q -= 6;
+      if (e200Ok && side * (price - e200) < -0.5 * atr) continue;   // cassure à contre-courant du fond de marché
+      const mid = (hh + ll) / 2;
+      push({
+        key: 'breakout', name: 'Cassure de compression', side, quality: q,
+        stopRef: mid - side * 0.15 * atr,
+        why: `${K} bougies resserrées (${(width / atr).toFixed(1)} ATR, bandes plus serrées que ${Math.round((1 - bwPct) * 100)} % du temps récent) puis clôture au-delà avec un volume ×${vr.toFixed(1)}`,
+      });
+    }
+  }
+
+  // --- 3. Rejet en range : pas de tendance, le prix touche le bord et se fait refuser. On vise le milieu.
+  if (adx < 20 && !expanding) {
+    for (const side of [1, -1]) {
+      // extrémité du range : bas (ou haut) des bandes de Bollinger, ou bord du couloir des 20 dernières bougies
+      const rHi = hiOf(20), rLo = loOf(20), rW = Math.max(rHi - rLo, 1e-12);
+      const posInRange = (price - rLo) / rW;
+      const atEdge = side > 0 ? pb <= 0.25 || posInRange <= 0.2 : pb >= 0.75 || posInRange >= 0.8;
+      const wick = side > 0 ? dnW : upW;
+      const rsiOk = side > 0 ? rsi <= 45 : rsi >= 55;
+      if (!atEdge || !rsiOk || wick < 0.35 * rng || side * body < -0.15 * rng) continue;
+      let q = 38 + clamp((wick / rng - 0.35) / 0.35, 0, 1) * 18
+        + clamp(side > 0 ? (45 - rsi) / 16 : (rsi - 55) / 16, 0, 1) * 14;
+      if (adx < 14) q += 6;
+      if (vr >= 1.2) q += 5;
+      if (e200Ok && side * (price - e200) < -2 * atr) q -= 8;
+      push({
+        key: 'fade', name: 'Rejet en range', side, quality: q,
+        stopRef: (side > 0 ? last.l : last.h) - side * 0.25 * atr,
+        tpRef: side > 0 ? Math.max(a.bbMid, price + 0.8 * atr) : Math.min(a.bbMid, price - 0.8 * atr),
+        why: `marché sans tendance (ADX ${adx.toFixed(0)}), le prix touche ${side > 0 ? 'le bas' : 'le haut'} des bandes de Bollinger et se fait rejeter (mèche de ${Math.round((wick / rng) * 100)} % de la bougie, RSI ${rsi.toFixed(0)})`,
+      });
+    }
+  }
+
+  // --- 4. Impulsion : grosse bougie + gros volume qui casse les plus hauts (ou plus bas) récents. On suit.
+  for (const side of [1, -1]) {
+    const brk = side > 0 ? last.c > hiOf(10) : last.c < loOf(10);
+    if (!(side * body >= 0.9 * atr) || !brk || vr < 1.6 || hist * side <= 0 || adx < 18) continue;
+    let q = 42 + clamp((vr - 1.6) / 1.4, 0, 1) * 12 + clamp((side * body / atr - 0.9) / 0.8, 0, 1) * 12 + htfBonus(side, 10, 16);
+    if (structure === side) q += 6;
+    if (e200Ok && side * (price - e200) > 0) q += 5;
+    push({
+      key: 'impulse', name: 'Impulsion', side, quality: q,
+      stopRef: (side > 0 ? Math.min(last.l, last.c - 1.1 * atr) : Math.max(last.h, last.c + 1.1 * atr)) - side * 0.1 * atr,
+      why: `bougie d'impulsion de ${(Math.abs(body) / atr).toFixed(1)} ATR avec un volume ×${vr.toFixed(1)}, cassure des ${10} dernières bougies`,
+    });
+  }
+  return out;
+}
 
 function analyze(cs) {
   const n = cs.length;
@@ -561,6 +727,28 @@ function analyze(cs) {
   const bw = (bb.up - bb.lo) / bb.mid, bwp = (bbp.up - bbp.lo) / bbp.mid;
   const pb = bb.up > bb.lo ? (price - bb.lo) / (bb.up - bb.lo) : 0.5;
   const expanding = bw > bwp * 1.02;
+  const e200raw = emaSeries(c, 200)[L - 1], e200Ok = L >= 150;
+  const e200 = e200Ok ? e200raw : e21;
+
+  // VWAP de la journée (prix typique pondéré par le volume), remis à zéro à minuit UTC
+  let vwap = price, vwapOk = false;
+  {
+    const dayMs = 864e5, dk = Math.floor(last.t / dayMs);
+    let pv = 0, vv = 0, cnt = 0;
+    for (let i = w.length - 1; i >= 0; i--) { if (Math.floor(w[i].t / dayMs) !== dk) break; const tp = (w[i].h + w[i].l + w[i].c) / 3; pv += tp * w[i].v; vv += w[i].v; cnt++; }
+    if (cnt < 10) { pv = 0; vv = 0; for (let i = Math.max(0, w.length - 60); i < w.length; i++) { const tp = (w[i].h + w[i].l + w[i].c) / 3; pv += tp * w[i].v; vv += w[i].v; } }
+    if (vv > 0) { vwap = pv / vv; vwapOk = true; }
+  }
+
+  // compression des bandes de Bollinger : place de la largeur actuelle parmi les 100 dernières (0 = la plus serrée)
+  let bwPct = 0.5;
+  {
+    const hist2 = [];
+    for (let i = Math.max(20, L - 100); i <= L; i++) { const b = bbAt(c, i); hist2.push((b.up - b.lo) / b.mid); }
+    const cur = hist2[hist2.length - 1];
+    bwPct = hist2.length > 5 ? hist2.filter((x) => x < cur).length / hist2.length : 0.5;
+  }
+
   const vols = w.slice(-21, -1).map((x) => x.v);
   const vavg = vols.reduce((a, b) => a + b, 0) / Math.max(1, vols.length);
   const vr = vavg > 0 ? last.v / vavg : 1;
@@ -594,15 +782,28 @@ function analyze(cs) {
     htfReady = true;
   }
 
-  const parts = { trend, momentum, rsi: rsiPart, boll, volume, htf };
-  let num = 0, den = 0;
-  for (const k of Object.keys(parts)) {
-    if (k === 'htf' && !htfReady) continue;
-    num += WEIGHTS[k] * parts[k]; den += WEIGHTS[k];
-  }
-  const score = Math.round((100 * num) / den);
-  return {
-    ready: true, n, price, score, parts, regime, tfFactor: tf, adx, pdi, mdi, rsi, atr,
+  const trendDir = trend > 0.25 && e21 > e50 ? 1 : trend < -0.25 && e21 < e50 ? -1 : 0;
+  const fib = fibInfo(w, atr, price, trendDir);
+  const parts = { trend, momentum, rsi: rsiPart, boll, volume, htf, fib: fib.ok ? fib.dir * fib.strength : 0 };
+
+  // structure du marché : sommets et creux de plus en plus hauts (1), de plus en plus bas (-1), ou pas de structure (0)
+  const structure = structDir(w, 3);
+
+  /* BIAIS : dans quel sens penche le marché, de -100 à +100. Il ne décide plus des entrées (ce sont les setups),
+     il sert à décrire le marché et à juger un retournement contre une position ouverte. */
+  let bn = 0, bd = 0;
+  const add = (wgt, v) => { bn += wgt * clamp(v, -1, 1); bd += wgt; };
+  add(30, (e9 - e21) / (0.6 * atr + 1e-12));
+  add(20, (e21 - e50) / (1.2 * atr + 1e-12));
+  if (e200Ok) add(15, (price - e200) / (3 * atr + 1e-12));
+  add(15, h / (0.12 * atr + 1e-12));
+  if (vwapOk) add(10, (price - vwap) / (1.5 * atr + 1e-12));
+  if (htfReady) add(15, htf);
+  add(10, structure);
+  const score = Math.round((100 * bn) / Math.max(1, bd));
+  const out = {
+    ready: true, n, price, score, bias: score, parts, fib, regime, tfFactor: tf, adx, pdi, mdi, rsi, atr,
+    e200, e200Ok, vwap, vwapOk, bwPct, structure, expanding, bbMid: bb.mid, bbUp: bb.up, bbLo: bb.lo,
     atrPct: (atr / price) * 100, e9, e21, e50, hist: h, pb, vr, htfReady, bwExpanding: expanding,
     range: last.h - last.l,
     ext: atr > 0 ? (price - e21) / atr : 0,                              // distance du prix à l'EMA 21, en ATR
@@ -611,6 +812,9 @@ function analyze(cs) {
     swingLow: Math.min(...w.slice(-8).map((x) => x.l)), swingHigh: Math.max(...w.slice(-8).map((x) => x.h)),
     low3: Math.min(...w.slice(-3).map((x) => x.l)), high3: Math.max(...w.slice(-3).map((x) => x.h)),
   };
+  out.setups = findSetups(out, w);
+  out.best = out.setups.length ? out.setups.reduce((b, x) => (x.quality > b.quality ? x : b)) : null;
+  return out;
 }
 
 function explain(a, side) {
@@ -621,6 +825,7 @@ function explain(a, side) {
   if (p.boll * side > 0.3) r.push(side > 0 ? 'prix bas dans les bandes de Bollinger' : 'prix haut dans les bandes de Bollinger');
   if (p.volume * side > 0.3) r.push('volume ×' + a.vr.toFixed(1));
   if (a.htfReady && p.htf * side > 0.4) r.push('timeframe supérieur aligné');
+  if (a.fib && a.fib.ok && a.fib.dir === side) r.push(`repli sur le niveau Fibonacci ${(a.fib.lvl * 100).toFixed(1)} % avec bougie de reprise`);
   r.push('régime ' + a.regime + ' (ADX ' + a.adx.toFixed(0) + ')');
   return r.join(', ');
 }
@@ -852,7 +1057,7 @@ class Bot {
     if (q.bars >= cfg.maxBars) { await this.closePosition(price, 'durée maximale', this.lastT); return; }
 
     // 1) signal contraire franc
-    if (opp >= cfg.thr && q.bars >= 1) {
+    if (opp >= BIAS_REV && q.bars >= 1) {
       if (unreal >= this.feeFor(q.qty, q.entry)) {
         // en gain : on ne sort pas, on resserre le stop pour garder le gain
         q.tight = true;
@@ -870,7 +1075,7 @@ class Bot {
       }
     }
     // 2) signal contraire modéré sur une position perdante : sortie anticipée, perte limitée
-    else if (opp >= cfg.thr * 0.5 && unreal < 0 && q.bars >= 2) {
+    else if (opp >= BIAS_SOFT && unreal < 0 && q.bars >= 2) {
       const stopLoss = Math.max(0, q.dir * (q.entry - q.sl)) * q.qty;
       this.log('warn', `Le marché se retourne contre ce trade (score ${a.score}) : sortir maintenant limite la perte à ${pnlTxt} au lieu de ${(-stopLoss).toFixed(2)} USDT si le stop est touché.`);
       await this.closePosition(price, 'signal contraire (perte limitée)', this.lastT);
@@ -884,11 +1089,11 @@ class Bot {
     }
     const prog = q.T > 0 ? Math.max(0, (q.dir * (q.extreme - q.entry)) / q.T) : 0;
     let txt = `Revue ${lbl} (${q.bars} bougie${q.bars > 1 ? 's' : ''}) : ${pnlTxt}, score ${a.score > 0 ? '+' : ''}${a.score}`;
-    if (withTrade >= cfg.thr * 0.5) txt += ' (toujours dans le sens du trade)';
-    else if (opp > 0) txt += ` (le marché hésite, signal contraire ${Math.round(opp)}/${cfg.thr})`;
+    if (withTrade >= BIAS_SOFT) txt += ' (toujours dans le sens du trade)';
+    else if (opp > 0) txt += ` (le marché hésite, biais contraire ${Math.round(opp)}/${BIAS_REV})`;
     else txt += ' (neutre)';
     txt += `. Gain visé atteint à ${Math.round(prog * 100)} %.`;
-    this.decision = { kind: opp >= cfg.thr * 0.3 && unreal < 0 ? 'watch' : 'hold', text: txt };
+    this.decision = { kind: opp >= BIAS_SOFT * 0.6 && unreal < 0 ? 'watch' : 'hold', text: txt };
   }
 
   /* Recalcul à la demande (bouton) : en gain, on sécurise ; en perte, on minimise les dégâts. */
@@ -899,7 +1104,7 @@ class Bot {
     const atr = (a && a.atr) || q.risk / cfg.slAtr;
     const feeD = this.feeFor(q.qty, q.entry) / q.qty;
     const gain = q.dir * (price - q.entry), unreal = gain * q.qty;
-    const conf = !!(a && a.ready && q.dir * a.score >= cfg.thr * 0.5 && a.adx >= 18);
+    const conf = !!(a && a.ready && q.dir * a.score >= BIAS_SOFT && a.adx >= 18);
     const oldSl = q.sl, oldTp = q.tp;
     const lim = price - q.dir * 0.3 * atr;                          // jamais collé au prix : le bruit le toucherait
     const setSl = (v) => {
@@ -938,7 +1143,7 @@ class Bot {
     const costs = price * 2 * (feeRate(this.cfg.market) + this.cfg.slip);          // frais + glissement aller-retour, en prix
     // le gain visé est NET : on ajoute les frais pour que, une fois payés, il reste bien le gain demandé
     const want = ((this.cfg.gainTarget / 100) * price) / (this.fut ? this.cfg.leverage : 1) + costs;
-    return Math.max(want, (this.cfg.costMult ?? 6) * costs);                          // le gain visé ne descend jamais sous 6 x les frais (mesuré : en dessous, les frais mangent le gain)
+    return Math.max(want, (this.cfg.costMult ?? 3) * costs);                          // le gain visé ne descend jamais sous 6 x les frais (mesuré : en dessous, les frais mangent le gain)
   }
 
   roiOf(dist, price) { return (dist / price) * (this.fut ? this.cfg.leverage : 1) * 100; }
@@ -947,7 +1152,7 @@ class Bot {
   canRun() {
     const a = this.a, q = this.pos;
     if (!a || !a.ready || !q) return false;
-    return q.dir * a.score >= this.cfg.thr * 0.5 && a.adx >= 18;
+    return q.dir * a.score >= BIAS_SOFT && a.adx >= 18;
   }
 
   /* Gain visé atteint et marché toujours porteur : le stop passe à 80 % du gain visé et l'objectif est repoussé. */
@@ -1019,20 +1224,6 @@ class Bot {
     this.broker.updateStop(q, target).then(() => { q.slSent = target; }).catch((e) => { this.log('warn', 'Mise à jour du stop chez Binance impossible : ' + e.message + '. Le bot surveille le stop lui-même.'); q.slSent = target; }).finally(() => { q.upd = false; });
   }
 
-  /* Qualité de l'entrée : refuse les entrées prises contre la dernière bougie, contre une mèche de rejet,
-     ou dans un marché sans direction. (Les règles « trop étiré », RSI extrême, grosse bougie et volume faible
-     ont été testées et retirées : elles supprimaient des trades gagnants.)
-     Retourne la raison du refus, ou null si l'entrée est propre. */
-  entryQuality(a, side) {
-    const range = a.range || 0;
-    if (side * a.body < -0.5) return 'la dernière bougie va dans le sens contraire.';
-    const wick = side > 0 ? a.upWick : a.dnWick;
-    if (range > 0 && wick / range > 0.45) return side > 0 ? 'mèche haute de rejet sur la dernière bougie.' : 'mèche basse de rejet sur la dernière bougie.';
-    const rangeExtreme = (side > 0 && a.pb < 0.15) || (side < 0 && a.pb > 0.85);
-    if (a.adx < 15 && !rangeExtreme) return `marché sans direction (ADX ${a.adx.toFixed(0)}).`;
-    return null;
-  }
-
   skip(text) { this.decision = { kind: 'skip', text }; }
 
   /* Plus petite quantité acceptée par Binance (quantité min, pas de quantité et valeur min), avec une marge :
@@ -1043,36 +1234,54 @@ class Bot {
   }
   minOrder(price) { const p = price || this.lastPrice; return this.minQty(p) * p; }
 
+  /* Choix du trade : le bot parcourt son playbook et prend le meilleur setup valable.
+     Il n'y a plus de moyenne d'indicateurs : chaque setup est une figure complète avec son propre stop. */
   async consider(a, c) {
     const cfg = this.cfg;
     if (this.status === 'paused_day') { this.skip('Pause : limite de perte journalière atteinte.'); return; }
     if (this.cooldown > 0 && !this.reversing) { this.cooldown--; this.skip(`Temps de repos après la dernière sortie : encore ${this.cooldown} bougie(s) avant de pouvoir ré-entrer (réglable dans les paramètres avancés).`); return; }
-    const s = a.score, thr = cfg.thr;
-    const side = s >= thr ? 1 : s <= -thr ? -1 : 0;
-    if (!side) { this.decision = { kind: 'wait', text: `En attente : score ${s > 0 ? '+' : ''}${s}, il faut au moins ±${thr}.` }; return; }
-    if (side < 0 && !(this.fut && cfg.allowShort)) { this.skip('Signal vendeur ignoré (pas de vente à découvert en Spot ou short désactivé).'); return; }
-    if (cfg.confirmCandle && !this.reversing && this.prevScore * side < thr * 0.6) { this.skip(`Signal ${side > 0 ? 'acheteur' : 'vendeur'} (${s}) à confirmer à la prochaine bougie.`); return; }
-    if (cfg.htfGate && a.htfReady && a.parts.htf * side <= 0) { this.skip('Signal refusé : le timeframe supérieur va dans l\'autre sens.'); return; }
     if (a.range > 4 * a.atr) { this.skip('Bougie trop violente (mèche anormale), le bot attend.'); return; }
-    if (cfg.entryFilter) {
-      const why = this.entryQuality(a, side);
-      if (why) { this.skip('Signal ' + (side > 0 ? 'acheteur' : 'vendeur') + ' (' + s + ') refusé : ' + why); return; }
+
+    const minQual = cfg.minQ ?? 50;
+    const rejected = [];
+    const cands = (a.setups || []).filter((st) => {
+      if (cfg['s_' + st.key] === false) return false;
+      if (st.side < 0 && !(this.fut && cfg.allowShort)) { rejected.push(`${st.name} (vente) : pas de vente à découvert en Spot ou short désactivé`); return false; }
+      if (cfg.htfGate && st.key !== 'fade' && a.htfReady && a.parts.htf * st.side < -0.3) { rejected.push(`${st.name} : le timeframe supérieur va dans l'autre sens`); return false; }
+      if (st.quality < minQual) { rejected.push(`${st.name} de qualité ${st.quality}, il en faut ${minQual}`); return false; }
+      return true;
+    });
+    if (!cands.length) {
+      const near = (a.setups || []).map((st) => `${st.name} ${st.side > 0 ? 'achat' : 'vente'} (qualité ${st.quality})`).join(', ');
+      this.decision = {
+        kind: rejected.length ? 'skip' : 'wait',
+        text: rejected.length
+          ? `Aucun trade : ${rejected.slice(0, 2).join(' ; ')}.`
+          : `Aucune figure du playbook n'est présente (biais ${a.score > 0 ? '+' : ''}${a.score}, ADX ${(a.adx || 0).toFixed(0)}, ${a.regime || 'marché calme'}). Le bot attend un repli en tendance, une cassure, un rejet de range ou une impulsion.${near ? ' En cours : ' + near + '.' : ''}`,
+      };
+      return;
     }
+    const st = cands.reduce((b, x) => (x.quality > b.quality ? x : b));
+    const side = st.side;
 
     const price = this.lastPrice ?? c.c;
     const eq = this.equity(price);
-    let stopDist = Math.max(a.atr * cfg.slAtr, price * 0.0005);
-    if (cfg.structStop && a.swingLow !== undefined) {
-      const beyond = side > 0 ? price - (a.swingLow - 0.2 * a.atr) : (a.swingHigh + 0.2 * a.atr) - price;
-      if (beyond > stopDist) stopDist = Math.min(beyond, a.atr * 3.5);
-    }
-    // gain visé (en % de la marge) converti en distance de prix. Le stop est borné pour garder un rapport gain/risque raisonnable.
+    // stop : à l'endroit où le scénario du setup est invalidé, borné entre 0,9 et 3,5 ATR
+    let stopDist = clamp(side * (price - st.stopRef), a.atr * 0.9, a.atr * 3.5);
     const Tdist = this.targetDist(price);
     stopDist = Math.min(stopDist, Math.max(a.atr * (cfg.sfloor ?? 1.0), (cfg.sc ?? 1.5) * Tdist));
     stopDist = Math.max(stopDist, price * 0.0005);
-    /* Taille : part du budget engagée (alloc), modulée par la force du signal (60 % à 100 % de cette part),
+    // objectif propre au setup (le milieu des bandes pour un rejet de range) s'il est plus proche que le gain visé
+    let T = Tdist;
+    if (st.tpRef !== undefined) {
+      const d = side * (st.tpRef - price);
+      const floorT = price * (cfg.costMult ?? 3) * 2 * (feeRate(cfg.market) + cfg.slip);
+      if (d < floorT) { this.skip(`${st.name} ignoré : son objectif naturel (${fmtP(st.tpRef)}) est trop proche pour couvrir les frais.`); return; }
+      T = Math.min(T, d);
+    }
+    /* Taille : part du budget engagée (alloc), modulée par la qualité du setup (60 % à 100 % de cette part),
        puis plafonnée pour que la perte, si le stop est touché, ne dépasse pas riskPct du capital. */
-    const conv = clamp(0.6 + (0.4 * (Math.abs(s) - thr)) / Math.max(1, (100 - thr) * 0.6), 0.6, 1);
+    const conv = clamp(0.6 + (0.4 * (st.quality - minQual)) / Math.max(1, (100 - minQual) * 0.6), 0.6, 1);
     const margin = Math.min(eq * 0.95, eq * (cfg.alloc / 100) * conv);
     const wanted = this.fut ? margin * cfg.leverage : margin;
     const lossCap = (eq * cfg.riskPct) / 100 / (stopDist / price);
@@ -1082,24 +1291,25 @@ class Bot {
     this.lastSizing = { conv, margin, wanted, lossCap, sizedBy };
     if (this.broker.floorQty) qty = this.broker.floorQty(qty);
     let notional = qty * price;
-    const minQ = this.minQty(price);
-    if (qty < minQ) {
-      const minN = minQ * price;
+    const minQty = this.minQty(price);
+    if (qty < minQty) {
+      const minN = minQty * price;
       if (minN > maxNotional) { this.skip(`Budget trop faible : sur ${cfg.symbol}, Binance exige au moins ${minN.toFixed(2)} USDT par ordre, ton budget n'en permet que ${maxNotional.toFixed(2)}. Augmente le budget ou le levier, ou choisis une paire moins chère (DOGE, XRP).`); return; }
       if ((minN * stopDist) / price > eq * Math.max(0.05, cfg.riskPct / 100)) { this.skip(`Ignoré : l'ordre minimum de Binance (${minN.toFixed(2)} USDT) ferait perdre plus de ${Math.max(5, cfg.riskPct).toFixed(0)} % du capital avec ce stop.`); return; }
-      qty = minQ; notional = minN;
+      qty = minQty; notional = minN;
     }
     if (this.fut) {
       const liqDist = 1 / cfg.leverage - 0.005;
       if (stopDist / price > liqDist * 0.7) { this.skip(`Levier x${cfg.leverage} trop élevé pour ce stop : la liquidation serait trop proche.`); return; }
     }
-    const gainUsd = Tdist * qty;
+    const gainUsd = T * qty;
     const feeUsd = this.feeFor(qty, price), feeNeed = feeUsd * (this.reversing ? 3 : 1.5);
     if (cfg.costFilter && gainUsd < feeNeed) {
       this.skip(`Ignoré : le gain visé (${gainUsd.toFixed(2)} USDT) ne couvre pas assez les frais aller-retour (${feeUsd.toFixed(2)} USDT${this.reversing ? ', doubles frais en cas d\'inversion' : ''}). Augmente le gain visé, le levier ou le budget.`);
       return;
     }
-    await this.openPosition(side, a, price, qty, stopDist, Tdist);
+    this.setup = st;
+    await this.openPosition(side, a, price, qty, stopDist, T);
   }
 
   async openPosition(side, a, price, qty, stopDist, Tdist) {
@@ -1113,7 +1323,7 @@ class Bot {
       const notional = q * entry;
       const locked = this.fut ? notional / cfg.leverage : notional;
       const pos = {
-        dir: side, qty: q, entry, sl, tp, tpEx: cfg.runOn ? entry + side * (cfg.stretch ?? 4) * T : tp, sl0: sl, risk: stopDist, T, ext: false, extreme: entry, bars: 0,
+        dir: side, qty: q, entry, sl, tp, setup: this.setup && this.setup.key, setupName: this.setup && this.setup.name, quality: this.setup && this.setup.quality, tpEx: cfg.runOn ? entry + side * (cfg.stretch ?? 4) * T : tp, sl0: sl, risk: stopDist, T, ext: false, extreme: entry, bars: 0,
         be: false, trailing: false, kind: null, slSent: sl, feeOpen: fill.fee, locked, notional, t: this.lastT, wall: Date.now(),
         liq: this.fut ? entry * (1 - side * (1 / cfg.leverage - 0.005)) : null, ids: {},
       };
@@ -1131,8 +1341,8 @@ class Bot {
       this.markers.push({ t: this.lastT, p: entry, type: side > 0 ? 'buy' : 'sell' });
       const eqNow = this.cash + locked + fill.fee, lossIfSl = stopDist * q;
       const net = this.roiOf(T, entry) - this.roiOf(entry * 2 * (feeRate(cfg.market) + cfg.slip), entry);
-      this.log('trade', `${side > 0 ? 'ACHAT (long)' : 'VENTE (short)'} ${q.toFixed(6)} ${cfg.symbol.replace('USDT', '')} à ${fmtP(entry)} · stop ${fmtP(sl)} · objectif ${fmtP(tp)} (${this.roiOf(T, entry).toFixed(1)} % de la marge en brut, soit environ ${net.toFixed(1)} % net après frais${net > cfg.gainTarget * 1.05 ? ', relevé : le gain visé doit valoir au moins 6 fois les frais' : ''})` +
-        (this.fut ? ` · levier x${cfg.leverage}` : '') + ` · marge engagée ${locked.toFixed(2)} USDT (${((locked / eqNow) * 100).toFixed(0)} % du capital), perte si stop ${lossIfSl.toFixed(2)} USDT (${((lossIfSl / eqNow) * 100).toFixed(1)} %). Raison : ${explain(a, side)}.`);
+      this.log('trade', `${this.setup ? '[' + this.setup.name + ' · qualité ' + this.setup.quality + '] ' : ''}${side > 0 ? 'ACHAT (long)' : 'VENTE (short)'} ${q.toFixed(6)} ${cfg.symbol.replace('USDT', '')} à ${fmtP(entry)} · stop ${fmtP(sl)} · objectif ${fmtP(tp)} (${this.roiOf(T, entry).toFixed(1)} % de la marge en brut, soit environ ${net.toFixed(1)} % net après frais${net > cfg.gainTarget * 1.05 ? ', relevé : le gain visé doit valoir au moins 6 fois les frais' : ''})` +
+        (this.fut ? ` · levier x${cfg.leverage}` : '') + ` · marge engagée ${locked.toFixed(2)} USDT (${((locked / eqNow) * 100).toFixed(0)} % du capital), perte si stop ${lossIfSl.toFixed(2)} USDT (${((lossIfSl / eqNow) * 100).toFixed(1)} %). Raison : ${this.setup ? this.setup.why : explain(a, side)}.`);
       this.decision = { kind: 'hold', text: 'Position ouverte.' };
     } catch (e) {
       if (e.timeout) {
@@ -1173,7 +1383,7 @@ class Bot {
       const pnl = proceeds - q.locked - q.feeOpen;
       this.cash += proceeds;
       const r = pnl / (q.risk * q.qty);
-      this.trades.push({ t0: q.t, t1: t, side: q.dir, entry: q.entry, exit, qty: q.qty, pnl, r, reason, bars: q.bars });
+      this.trades.push({ t0: q.t, t1: t, side: q.dir, entry: q.entry, exit, qty: q.qty, pnl, r, reason, bars: q.bars, setup: q.setup, setupName: q.setupName, quality: q.quality });
       this.markers.push({ t, p: exit, type: 'exit', win: pnl > 0 });
       this.dayPnl = (this.dayPnl || 0) + pnl;
       this.pos = null;
@@ -1505,7 +1715,7 @@ async function fetchWarmup(cfg) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { riskParams, TFS, TF_SEC, PROFILES, DEFAULTS, MIN_CANDLES, emaSeries, rsiLast, atrLast, adxLast, macdHist, bbAt, aggregate, analyze, explain,
+  module.exports = { riskParams, findSetups, structDir, TFS, TF_SEC, PROFILES, DEFAULTS, MIN_CANDLES, emaSeries, rsiLast, atrLast, adxLast, macdHist, bbAt, aggregate, analyze, explain,
     CandleBuilder, SimMarket, simTickStep, SimBroker, Bot, hmacHex, LiveBroker, PaperBroker, binanceEndpoints, feeRate, fmtP, mulberry32 };
 }
 
@@ -1564,17 +1774,18 @@ class LiveFeed {
 
 /* ---------------- État ---------------- */
 const MODE_HINT = {
+  sim: 'Prix synthétiques générés ici (version hébergée en ligne). Les résultats ne prouvent rien sur les vrais marchés.',
   paper: 'Vraies données Binance en direct (chart, bougies, filtres de quantité, frais), mais les ordres sont simulés : aucun argent, aucune clé API. Le meilleur moyen de tester le bot dans les conditions réelles.',
   live: 'Ordres réels avec ton argent. Teste d\'abord en mode Papier.',
 };
 const NUMS = [
-  ['thr', 'thr', 10, 90, false], ['alloc', 'alloc', 5, 100, false], ['riskPct', 'riskPct', 0.5, 100, false], ['slAtr', 'slAtr', 0.5, 6, false],
+  ['minQ', 'minQ', 10, 95, false], ['alloc', 'alloc', 5, 100, false], ['riskPct', 'riskPct', 0.5, 100, false],
   ['gainTarget', 'gainTarget', 0.5, 100, false], ['feeUsd', 'feeUsd', 0, 1000, false],
   ['trailAtr', 'trailAtr', 0.5, 6, false], ['maxBars', 'maxBars', 3, 500, true], ['maxDailyLoss', 'maxDailyLoss', 0.5, 50, false], ['maxDD', 'maxDD', 2, 80, false],
   ['cooldown', 'cooldown', 0, 20, true],
   ['budget', 'budget', 5, 10000000, false],
 ];
-const CHECKS = [['entryFilter', 'entryFilter'], ['structStop', 'structStop'], ['dailyLossOn', 'dailyLossOn'], ['runOn', 'runOn'], ['reverse', 'reverse'], ['trailing', 'trailing'], ['allowShort', 'allowShort'], ['htfGate', 'htfGate'], ['confirmCandle', 'confirmCandle'], ['costFilter', 'costFilter'], ['closeOnStop', 'closeOnStop']];
+const CHECKS = [['s_pullback', 's_pullback'], ['s_breakout', 's_breakout'], ['s_fade', 's_fade'], ['s_impulse', 's_impulse'], ['dailyLossOn', 'dailyLossOn'], ['runOn', 'runOn'], ['reverse', 'reverse'], ['trailing', 'trailing'], ['allowShort', 'allowShort'], ['htfGate', 'htfGate'], ['costFilter', 'costFilter'], ['closeOnStop', 'closeOnStop']];
 
 let cfg = { ...DEFAULTS, closeOnStop: true };
 try {
@@ -1653,7 +1864,7 @@ function refreshControls() {
   $('speedHint').textContent = `Une bougie ${cfg.tf} dure environ ${per >= 10 ? Math.round(per) : per.toFixed(1)} s à l'écran.`;
   const rl = cfg.riskLevel ?? 100;
   $('riskLevel').value = rl; $('riskVal').textContent = rl + ' %';
-  $('riskHint').textContent = `À ${rl} % de risque : le bot engage jusqu'à ${cfg.alloc} % du budget, accepte de perdre au plus ${cfg.riskPct} % du capital par trade et entre à partir d'un score de ±${cfg.thr}.` + (rl >= 150 ? ' Zone dangereuse : une courte série de pertes peut vider le compte.' : rl === 0 ? ' Positions minuscules : les gains et les pertes seront très faibles.' : '');
+  $('riskHint').textContent = `À ${rl} % de risque : le bot engage jusqu'à ${cfg.alloc} % du budget, accepte de perdre au plus ${cfg.riskPct} % du capital par trade et n'entre que sur une figure de qualité ${cfg.minQ} ou plus (sur 100).` + (rl >= 150 ? ' Zone dangereuse : une courte série de pertes peut vider le compte.' : rl === 0 ? ' Positions minuscules : les gains et les pertes seront très faibles.' : '');
   $('riskHint').className = 'hint' + (rl >= 150 ? ' warn' : '');
   const rt = 2 * (feeRate(cfg.market) + cfg.slip) * 100;
   {
@@ -1668,7 +1879,8 @@ function refreshControls() {
   b.className = 'banner' + (cfg.mode === 'live' ? ' live' : ' test');
   b.textContent = cfg.mode === 'live' ? 'MODE RÉEL : le bot passe de vrais ordres avec ton argent. Garde cet onglet ouvert et visible tant que le bot tourne.'
     : cfg.mode === 'paper' ? 'Mode Papier : prix réels de Binance en direct, ordres simulés, aucun argent engagé. Garde cet onglet ouvert tant que le bot tourne.'
-    : 'Mode simulation : prix synthétiques, aucun ordre envoyé. Les résultats montrent le fonctionnement du bot, pas sa rentabilité réelle.';
+    : 'Mode simulation (version hébergée) : prix synthétiques, aucun ordre envoyé. Les résultats montrent le fonctionnement du bot, pas sa rentabilité réelle.';
+  $('simBtn').hidden = !IS_ARTIFACT;
   $('bannerArtifact').hidden = !IS_ARTIFACT;
   $('segMode').querySelectorAll('button').forEach((x) => { if (IS_ARTIFACT && x.dataset.v !== 'sim') x.disabled = true; });
 }
@@ -1990,7 +2202,7 @@ function setStatus(kind, text) {
 }
 
 const STATUS_TXT = { warmup: ['warn', 'Échauffement'], running: ['ok', 'En marche'], paused_day: ['warn', 'Pause : limite du jour'], halted: ['err', 'Arrêt d\'urgence'], stopped: ['', 'Arrêté'] };
-const FACTORS = [['trend', 'Tendance (EMA)'], ['momentum', 'Momentum (MACD)'], ['rsi', 'RSI'], ['boll', 'Bollinger'], ['volume', 'Volume'], ['htf', 'Timeframe ×5']];
+const SETUPS = [['pullback', 'Repli en tendance'], ['breakout', 'Cassure'], ['fade', 'Rejet en range'], ['impulse', 'Impulsion']];
 
 function render() {
   const bot = S.bot;
@@ -2065,33 +2277,41 @@ function barFill(v, el) {
 
 let factorsBuilt = false;
 function renderDecision(a, bot) {
-  const thr = cfg.thr;
+  const minQ = cfg.minQ;
   if (!factorsBuilt) {
-    $('factors').innerHTML = FACTORS.map(([k, l]) => `<div class="frow"><span>${l}</span><div class="fbar"><span class="g-mid"></span><span class="g-fill" id="f_${k}"></span></div><span class="fv" id="fv_${k}">0</span></div>`).join('');
+    $('setups').innerHTML = SETUPS.map(([k, l]) => `<div class="srow" id="s_row_${k}"><span class="sname">${l}</span><div class="sbar"><span class="smin" id="s_min_${k}"></span><span class="sfill" id="s_fill_${k}"></span></div><span class="sq" id="s_q_${k}">—</span></div>`).join('');
     factorsBuilt = true;
   }
   const ready = a && a.ready;
   const score = ready ? a.score : 0;
   $('scoreVal').textContent = (score > 0 ? '+' : '') + score;
-  $('scoreVal').className = 'scoreval ' + (score >= thr ? 'pos' : score <= -thr ? 'neg' : '');
+  $('scoreVal').className = 'scoreval ' + (score >= 25 ? 'pos' : score <= -25 ? 'neg' : '');
   barFill(score / 100, $('gFill'));
-  $('gThrL').style.left = (50 - thr / 2) + '%'; $('gThrR').style.left = (50 + thr / 2) + '%';
-  const d = bot ? bot.decision : { kind: 'wait', text: 'Le bot n\'est pas démarré. Ce score montre comment il lit le marché simulé.' };
-  const tagMap = { wait: ['En attente', ''], skip: ['Filtré', ''], hold: ['En position', 'hold'], halt: ['Arrêté', ''] };
+  const d = bot ? bot.decision : { kind: 'wait', text: 'Le bot n\'est pas démarré. Cet aperçu montre comment il lit le marché.' };
+  const tagMap = { wait: ['En attente', ''], skip: ['Filtré', ''], hold: ['En position', 'hold'], watch: ['Sous surveillance', ''], halt: ['Arrêté', ''] };
   let [tt, tc] = tagMap[d.kind] || ['', ''];
-  if (d.kind === 'wait' && ready && score >= thr) { tt = 'Signal achat'; tc = 'buy'; } else if (d.kind === 'wait' && ready && score <= -thr) { tt = 'Signal vente'; tc = 'sell'; }
+  const best = ready && a.best && a.best.quality >= minQ ? a.best : null;
+  if ((d.kind === 'wait' || d.kind === 'skip') && best) { tt = best.side > 0 ? 'Achat : ' + best.name : 'Vente : ' + best.name; tc = best.side > 0 ? 'buy' : 'sell'; }
   $('scoreTag').textContent = tt; $('scoreTag').className = 'tag ' + tc;
   $('dText').textContent = d.text;
   if (ready) {
-    $('dRegime').textContent = `Régime : ${a.regime}` + (S.running ? ' · score en direct' : '');
-    $('dMeta').innerHTML = `<span>ADX <b>${a.adx.toFixed(0)}</b></span><span>RSI <b>${a.rsi.toFixed(0)}</b></span><span>ATR <b>${a.atrPct.toFixed(2)} %</b></span><span>Volume <b>×${a.vr.toFixed(1)}</b></span><span>Seuil <b>±${thr}</b></span>`;
-    FACTORS.forEach(([k]) => {
-      const v = (k === 'htf' && !a.htfReady) ? 0 : a.parts[k];
-      barFill(v, $('f_' + k)); $('fv_' + k).textContent = (k === 'htf' && !a.htfReady) ? 'n/d' : (v >= 0 ? '+' : '') + Math.round(v * 100);
+    $('dRegime').textContent = `Biais ${score > 0 ? '+' : ''}${score} · ${a.regime}` + (S.running ? ' · en direct' : '');
+    $('dMeta').innerHTML = `<span>ADX <b>${a.adx.toFixed(0)}</b></span><span>RSI <b>${a.rsi.toFixed(0)}</b></span><span>ATR <b>${a.atrPct.toFixed(2)} %</b></span><span>Volume <b>×${a.vr.toFixed(1)}</b></span>`
+      + (a.vwapOk ? `<span>VWAP <b>${a.price > a.vwap ? 'au-dessus' : 'en dessous'}</b></span>` : '')
+      + `<span>Qualité min <b>${minQ}</b></span>`;
+    const found = {};
+    (a.setups || []).forEach((st) => { if (!found[st.key] || st.quality > found[st.key].quality) found[st.key] = st; });
+    SETUPS.forEach(([k]) => {
+      const st = found[k], row = $('s_row_' + k), on = st && st.quality >= minQ;
+      row.className = 'srow' + (on ? ' on' : '') + (st && st.side < 0 ? ' short' : '');
+      $('s_fill_' + k).style.width = (st ? Math.round(st.quality) : 0) + '%';
+      $('s_min_' + k).style.left = minQ + '%';
+      $('s_q_' + k).textContent = st ? `${st.quality} ${st.side > 0 ? 'achat' : 'vente'}` : '—';
+      row.title = st ? st.why : 'Figure absente en ce moment.';
     });
   } else {
     $('dRegime').textContent = ''; $('dMeta').textContent = '';
-    FACTORS.forEach(([k]) => { barFill(0, $('f_' + k)); $('fv_' + k).textContent = '0'; });
+    SETUPS.forEach(([k]) => { $('s_fill_' + k).style.width = '0%'; $('s_q_' + k).textContent = '—'; $('s_row_' + k).className = 'srow'; });
   }
 }
 
